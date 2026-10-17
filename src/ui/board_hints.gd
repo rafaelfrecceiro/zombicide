@@ -16,13 +16,16 @@ func _draw() -> void:
 	if table == null or table.camera == null or table.session == null or table.session.view.is_empty(): return
 	var s = table.session.view
 	for id in table.board.zones:
+		var zone = table.board.zones[id]
 		var p = table.pos(id)
 		var points = PackedVector2Array()
-		for offset in [Vector3(-0.95,0.16,-0.95),Vector3(0.95,0.16,-0.95),Vector3(0.95,0.16,0.95),Vector3(-0.95,0.16,0.95)]:
+		var half_width = zone.width-0.05
+		var half_height = zone.height-0.05
+		for offset in [Vector3(-half_width,0.16,-half_height),Vector3(half_width,0.16,-half_height),Vector3(half_width,0.16,half_height),Vector3(-half_width,0.16,half_height)]:
 			points.append(table.camera.unproject_position(p+offset))
 		var center = table.camera.unproject_position(p+Vector3(0,0.16,0))
-		var bottom = table.camera.unproject_position(p+Vector3(0,0.16,0.74))
-		var top = table.camera.unproject_position(p+Vector3(0,0.16,-0.67))
+		var bottom = table.camera.unproject_position(p+Vector3(0,0.16,zone.height-0.26))
+		var top = table.camera.unproject_position(p+Vector3(0,0.16,-zone.height+0.33))
 		var color = Color("8ee3b0") if table.mode == "move" else Color("ffc56e")
 		if id in table.legal_zones:
 			draw_colored_polygon(points,Color(color,0.22))

@@ -21,9 +21,11 @@ Implementação inicial da M0. Dados ainda não conferidos ficam identificados c
 
 Abrir `src/project.godot` no Godot 4.7.2 e executar a cena principal. Instruções e verificações efetivamente realizadas em [progress.md](progress.md). O script `Iniciar-Jogo.ps1` também localiza a engine no PATH.
 
-Nesta entrega: mesa 3D com pinos, ações/combate e dados pendentes, objetivos/fuga, inventário, save e conexão privada host+convidado. **60/60** verificações de regras/save, **20/20** de interface headless, **21/21** com GPU e teste entre dois processos aprovados. Steam, internet e partida humana completa ainda não validados.
+Nesta entrega: mesa 3D com pinos, ações/combate e dados pendentes, objetivos/fuga, inventário, save e conexão privada host+convidado. **72/72** verificações de regras/save, **22/22** de interface headless, **24/24** com GPU e teste entre dois processos aprovados. Steam, internet e partida humana completa ainda não validados.
 
 O primeiro contato humano apontou dificuldade de entender como jogar. A revisão [UX-001](specs/UX-001.md) acrescenta guia inicial, orientação por etapa, destaque da peça ativa e dos destinos legais, e separa inventário/conexão das ações. Reteste humano ainda pendente; testes automatizados não comprovam compreensão.
+
+A revisão [MAP-001](specs/MAP-001.md) corrige zonas, portas, distâncias e visão a partir do manual. Missões novas usam 12 zonas; saves antigos de 18 células são incompatíveis e seu carregamento preserva o arquivo e a partida atual.
 
 ![Mesa de laboratório e interface de rolagem](qa/artifacts/dice-screen.png)
 

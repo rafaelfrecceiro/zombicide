@@ -38,13 +38,13 @@ func run() -> void:
 	var r = fresh()
 	check(r.s.survivors.size() == 6 and r.s.zombies.size() == 4,"six survivors and four initial enemies")
 	check(r.s.objectives.size() == 2 and r.s.crates.size() == 2,"M0 two objectives and two crates")
-	check(not command(r,"move",{"zone":"w1"}).ok,"must activate first")
+	check(not command(r,"move",{"zone":"v2"}).ok,"must activate first")
 	check(command(r,"activate",{"actor":0}).ok,"activate own piece")
 	var actions = r.s.survivors[0].actions
 	check(not command(r,"move",{"zone":"a"}).ok and r.s.survivors[0].actions == actions,"illegal move never spends actions")
-	check(command(r,"move",{"zone":"w1"}).ok and r.s.survivors[0].actions == actions-1,"legal movement spends exactly one action")
+	check(command(r,"move",{"zone":"v2"}).ok and r.s.survivors[0].actions == actions-1,"legal movement spends exactly one action")
 	check(not command(r,"activate",{"actor":1}).ok,"cannot interleave survivor activations")
-	check(not r.visible("w0","c"),"closed door blocks vision")
+	check(not r.visible("w0","b") and not r.visible("w0","c"),"closed entrance and solid wall block vision")
 	check(not command(r,"move",{"zone":"c"}).ok,"closed wall/door rejects movement")
 	r.s.survivors[0].zone = "v0"
 	r.s.survivors[0].actions = 2
@@ -137,7 +137,7 @@ func run() -> void:
 	check(r.s.outcome == "defeat","third wound causes collective defeat")
 	r = fresh()
 	command(r,"activate",{"actor":0})
-	var cmd = {"action":"move","zone":"w1","request":"repeat","revision":r.s.revision}
+	var cmd = {"action":"move","zone":"v2","request":"repeat","revision":r.s.revision}
 	check(r.apply(cmd).ok and r.apply(cmd).get("duplicate",false) and r.s.survivors[0].actions == 2,"duplicate network command spends once")
 	var bad = r.save_payload()
 	bad.state.schema = 99
@@ -157,7 +157,8 @@ func run() -> void:
 	r = fresh()
 	combat_fixture(r)
 	r.s.survivors[0].inventory[0] = "crowbar"
-	check(command(r,"open",{"zone":"d"}).ok and r.s.pending.kind == "building","opening building asks order of dark rooms")
+	r.s.survivors[0].zone = "w0"
+	check(command(r,"open",{"zone":"b"}).ok and r.s.pending.kind == "building","opening building asks order of dark rooms")
 	command(r,"choose",{"choice":"c"})
 	check(r.s.zombies.size() > 0 and r.s.pending.kind == "building","first dark room spawned and next choice retained")
 	command(r,"choose",{"choice":"b"})
@@ -222,9 +223,29 @@ func run() -> void:
 	var z1 = r.s.next_z
 	r.add_zombie("walker","v0")
 	r.add_zombie("walker","v0")
-	r.set_pending({"kind":"split","owner":"host","ids":[z1,z1+1],"routes":["n0","v1","v2"],"prompt":"split"})
+	r.set_pending({"kind":"split","owner":"host","ids":[z1,z1+1],"routes":["n0","n3","v2"],"prompt":"split"})
 	command(r,"choose",{"choice":"n0"})
 	check(not "n0" in r.choices(),"uneven split cannot allocate multiple remainder pieces to one route")
+	# Regression cases from ZCD001 pp.9-10/36, not from the old square grid.
+	r = fresh()
+	check(r.zombies_at("n0").size() == 2 and r.zombies_at("v0").size() == 1 and r.zombies_at("v2").size() == 1,"M0 runner and fatty share north junction; walkers occupy central and south streets")
+	check(r.neighbors("w0") == ["v2"] and not "c" in r.neighbors("w0",true),"exit reaches the south junction; archive has no outside door")
+	check(r.distance("w0","n3") == 4,"exit to northeast spawn is four street moves, not a square per tile fragment")
+	check(r.distance("w0","c") == 999,"closed west entrance blocks archive route")
+	r.s.doors[r.key("b","w0")] = true
+	check(r.distance("w0","c") == 2,"opened west entrance reaches archive via large storeroom in two moves")
+	check(r.visible("w0","b") and not r.visible("w0","c"),"street sight enters one room only")
+	check(r.visible("b","w0") and not r.visible("b","v2"),"large room sees through south door without turning east")
+	check(r.visible("n0","v2") and not r.visible("n3","v0"),"avenue sight crosses tile seams but does not turn at north junction")
+	r.s.doors[r.key("g","v2")] = true
+	check(r.visible("g","w0") and r.visible("w0","g") and not r.visible("w0","h"),"east doorway sees straight across southern street, limited to first room")
+	r.s.doors[r.key("e","n3")] = true
+	check(r.visible("e","n3") and not r.visible("e","n0"),"north entrance cannot see around the corner")
+	check(r.visible("a","b") and r.visible("a","c") and r.visible("c","b"),"three west rooms have the printed internal openings")
+	var old_map = r.save_payload()
+	old_map.state.content = "m0-lab-v1"
+	var unchanged = r.save_payload()
+	check(not r.restore(old_map) and r.save_payload() == unchanged,"old eighteen-cell save rejected without changing current mission")
 	print("RESULT ",count-failures.size(),"/",count," passed")
 	var report = {"checks":count,"passed":count-failures.size(),"failures":failures}
 	var out = ""

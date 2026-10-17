@@ -47,7 +47,7 @@ func _process(_delta: float) -> bool:
 			stage = 1
 		elif stage == 1 and v.paused and v.pause_reason.contains("desconectou"):
 			observed_pause = true
-			if v.survivors[3].owner != "guest" or v.survivors[3].zone != "w1":
+			if v.survivors[3].owner != "guest" or v.survivors[3].zone != "v2":
 				complete(false,"Lost guest ownership or move")
 				return false
 			stage = 2
@@ -55,7 +55,7 @@ func _process(_delta: float) -> bool:
 			stage = 3
 			reconnect_at = ticks+20
 		elif stage == 3 and ticks >= reconnect_at:
-			complete(observed_pause and v.survivors[3].zone == "w1","Host observed pause, credential rejoin and preserved ownership")
+			complete(observed_pause and v.survivors[3].zone == "v2","Host observed pause, credential rejoin and preserved ownership")
 	else:
 		if stage == 0 and v.get("players",[]).size() == 2 and not v.paused and v.active_player == 1:
 			session.submit({"action":"activate","actor":0})
@@ -64,9 +64,9 @@ func _process(_delta: float) -> bool:
 			session.submit({"action":"activate","actor":3})
 			stage = 2
 		elif stage == 2 and v.active == 3:
-			session.submit({"action":"move","zone":"w1"})
+			session.submit({"action":"move","zone":"v2"})
 			stage = 3
-		elif stage == 3 and v.survivors[3].zone == "w1":
+		elif stage == 3 and v.survivors[3].zone == "v2":
 			session.disconnect_client()
 			stage = 4
 			reconnect_at = ticks+35
@@ -82,7 +82,7 @@ func _process(_delta: float) -> bool:
 			stage = 6
 			reconnect_at = ticks+35
 		elif stage == 6 and ticks >= reconnect_at:
-			complete(rejected_foreign and v.survivors[3].zone == "w1","Client command rejected, legal move and credential reconnect preserved")
+			complete(rejected_foreign and v.survivors[3].zone == "v2","Client command rejected, legal move and credential reconnect preserved")
 	return false
 
 func complete(ok: bool,message: String) -> void:

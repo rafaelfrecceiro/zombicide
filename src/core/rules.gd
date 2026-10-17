@@ -10,7 +10,7 @@ var queue: Array = []
 func start(seed_value: int = 0, online: bool = false) -> void:
 	if seed_value == 0: rng.randomize()
 	else: rng.seed = seed_value
-	s = {"schema":1,"content":"m0-lab-v1","revision":0,"round":1,"phase":"players","paused":false,"pause_reason":"","outcome":"","active_player":0,"first_player":0,"active":-1,"players":["host","guest"] if online else ["host"],"survivors":[],"zombies":[],"doors":{},"revealed":[],"noise":{},"objectives":map.objectives.duplicate(),"crates":map.crates.duplicate(),"pending":{},"done":[],"log":[],"dice":[],"next_z":0,"seen":{},"deck":[],"discard":[],"spawn_deck":[],"spawn_discard":[],"special_deck":["special","special"],"reserve":{"walker":40,"fatty":16,"runner":16,"abomination":1}}
+	s = {"schema":1,"content":Content.VERSION,"revision":0,"round":1,"phase":"players","paused":false,"pause_reason":"","outcome":"","active_player":0,"first_player":0,"active":-1,"players":["host","guest"] if online else ["host"],"survivors":[],"zombies":[],"doors":{},"revealed":[],"noise":{},"objectives":map.objectives.duplicate(),"crates":map.crates.duplicate(),"pending":{},"done":[],"log":[],"dice":[],"next_z":0,"seen":{},"deck":[],"discard":[],"spawn_deck":[],"spawn_discard":[],"special_deck":["special","special"],"reserve":{"walker":40,"fatty":16,"runner":16,"abomination":1}}
 	s["content_block"] = false
 	for pair in map.doors: s.doors[key(pair[0],pair[1])] = false
 	var starting = ["pistol","pistol","pistol","axe","crowbar","bat"]
@@ -60,36 +60,34 @@ func distance(a: String,b: String) -> int:
 	return 999
 
 func visible(a: String,b: String) -> bool:
-	if a == b: return true
 	if not map.zones.has(a) or not map.zones.has(b): return false
-	var za = map.zones[a]
-	var zb = map.zones[b]
-	if za.inside and zb.inside: return b in neighbors(a)
-	if za.inside:
-		for n in neighbors(a):
-			if not map.zones[n].inside and street_visible(n,b): return true
-		return false
-	if zb.inside: return visible(b,a)
-	return street_visible(a,b)
-
-func street_visible(a: String,b: String) -> bool:
 	if a == b: return true
-	if map.zones[a].inside or map.zones[b].inside: return false
-	var za = map.zones[a]
-	var zb = map.zones[b]
-	if za.x != zb.x and za.y != zb.y: return false
+	# Continue along the opening's direction. Seeing a street does not allow turning a corner.
+	for n in neighbors(a):
+		var edge = Content.border(map.zones[a],map.zones[n])
+		if edge.is_empty(): continue
+		if n == b: return true
+		if not map.zones[n].inside and sight_ray(n,b,edge.direction): return true
+	return false
+
+func sight_ray(a: String,b: String,direction: Vector2i) -> bool:
 	var todo = [a]
 	var seen = [a]
 	while not todo.is_empty():
 		var z = todo.pop_front()
 		for n in neighbors(z):
-			if n in seen or map.zones[n].inside: continue
-			if za.x == zb.x and map.zones[n].x != za.x: continue
-			if za.y == zb.y and map.zones[n].y != za.y: continue
+			if n in seen: continue
+			var edge = Content.border(map.zones[z],map.zones[n])
+			if edge.is_empty() or edge.direction != direction: continue
 			if n == b: return true
 			seen.append(n)
-			todo.append(n)
+			if not map.zones[n].inside: todo.append(n)
 	return false
+
+func street_visible(a: String,b: String) -> bool:
+	if not map.zones.has(a) or not map.zones.has(b): return false
+	if map.zones[a].inside or map.zones[b].inside: return false
+	return visible(a,b)
 
 func zombies_at(z: String) -> Array:
 	return s.zombies.filter(func(v): return v.zone == z)
@@ -579,7 +577,7 @@ func save_payload() -> Dictionary:
 func restore(payload: Dictionary) -> bool:
 	payload = normalize_numbers(payload)
 	var state = payload.get("state",{})
-	if not state is Dictionary or state.get("schema",0) != 1 or state.get("content","") != "m0-lab-v1": return false
+	if not state is Dictionary or state.get("schema",0) != 1 or state.get("content","") != Content.VERSION: return false
 	if not state.get("survivors",[]) is Array or state.survivors.size() != 6: return false
 	for k in s.keys():
 		if not state.has(k): return false

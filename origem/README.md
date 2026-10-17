@@ -8,7 +8,7 @@ Acervo preservado no hub: `acervo/jogos/zombicide/2e-core-en-zcd001/`. Catálogo
 
 M0 p.36: 1V/3V, dois objetivos, duas caixas, saída/início a sudoeste, dois pontos de spawn a norte; um Fatty, um Runner, dois Walkers. Objetivos dão 5 adrenalina; caixas dão armas especiais; fuga só ao fim da ativação com saída livre após coleta; todos devem escapar.
 
-Mapa desenhado manualmente como dados próprios a partir do diagrama. Zonas e portas ainda exigem revisão de paridade. Geometria e cores procedurais não são os tiles oficiais.
+Mapa desenhado manualmente como dados próprios a partir do diagrama. [MAP-001](../specs/MAP-001.md) registra revisão visual de zonas, aberturas, portas e setup, confrontando pp.9–10/36. Geometria e cores procedurais não são os tiles oficiais. Revisão independente e partida completa ainda pendentes.
 
 Baralho e elenco de laboratório devem ter identificação explícita. Não inventar 40 cartas oficiais nem atribuir árvores de skills não verificadas. Protótipo pode usar peões sem habilidades individuais para testar regras base, com essa diferença visível, mas não pode apresentar esse modo como M0 integral fiel.
 
@@ -16,13 +16,13 @@ Baralho e elenco de laboratório devem ter identificação explícita. Não inve
 
 | Área | Estado real | Fonte/limite |
 | --- | --- | --- |
-| Setup e objetivos | Seis peões, dois objetivos e duas caixas; inimigos iniciais e saída | p.36, representação esquemática com paridade de topologia pendente |
+| Setup e objetivos | Seis peões, dois objetivos e duas caixas; Runner e Fatty juntos no norte, Walkers no centro e sul | p.36; transcrição visual revisada em MAP-001 |
 | Equipamento inicial | Três pistolas, um machado, um pé de cabra e um taco, distribuídos aleatoriamente | Quantidades p.4; taco e parte dos stats ainda de teste |
 | Equipamento de busca | Dez cartas de laboratório; pistola/machado/pé de cabra/escopeta/Molotov/provisões/Aaahh!! | Não reproduz quantidades/probabilidades da caixa; provisões sem efeito de consumo implementado |
 | Arma especial | Duas instâncias de fixture `special` | Não é inventário das 11 cartas Pimpweapon oficiais |
 | Spawn | Quatro entradas alternando dois exemplos Walker | Valores das linhas ilustradas pp.15/25; não é deck oficial, sem Rush/extra card real |
 | Sobreviventes | Seis adultos anônimos sem habilidades individuais; amarelo +1 ação | Sem equivalência alegada às fichas; pausa no laranja evita árvore inventada |
-| Mapa | 18 células, oito salas, quatro portas, duas salas escuras por edifício | Layout de laboratório a auditar; fronteiras reais podem atravessar tiles/células |
+| Mapa | 12 zonas: sete salas e cinco ruas; três portas externas; duas salas escuras por edifício | pp.9–10/36, MAP-001; substitui 18 células, preserva ruas sobre a emenda e sala alongada; arte ainda esquemática |
 | Arte | Geometria e materiais procedurais próprios | Nenhuma imagem oficial em runtime, nenhum modelo de terceiros |
 
 Essas lacunas impedem chamar a entrega de M0 integral fiel. O objetivo aprovado continua sendo preencher e validar o conteúdo oficial, sem redefinir silenciosamente o design como jogo diferente.

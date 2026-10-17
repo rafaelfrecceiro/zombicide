@@ -293,22 +293,36 @@ func build_world() -> void:
 		var z = board.zones[id]
 		var base = Color("686b5d") if z.inside else Color("46505b")
 		if z.inside and z.dark: base = Color("3e514e")
-		var floor_mesh = mesh_box(pos(id)+Vector3(0,0.06,0),Vector3(1.93,0.12,1.93),base,world)
+		var floor_mesh = mesh_box(pos(id)+Vector3(0,0.06,0),Vector3(z.width*2-0.07,0.12,z.height*2-0.07),base,world)
 		floors[id] = {"mesh":floor_mesh,"base":base}
 		if not z.inside:
 			for dx in [-0.57,-0.19,0.19,0.57]: mesh_box(pos(id)+Vector3(dx,0.131,0.08),Vector3(0.17,0.012,0.55),Color("b4b2a4"),world)
-	# Low walls expose closed boundaries without obscuring board zones.
+	# Room and street boundaries use the same extents as the rules and hit testing.
 	for a in board.zones:
 		for b in board.zones:
-			var za = board.zones[a]
-			var zb = board.zones[b]
-			if not ((zb.x == za.x+1 and zb.y == za.y) or (zb.y == za.y+1 and zb.x == za.x)): continue
+			if a >= b: continue
+			var edge = Content.border(board.zones[a],board.zones[b])
+			if edge.is_empty(): continue
 			var passage = false
-			for edge in board.edges+board.doors:
-				if a in edge and b in edge: passage = true; break
-			if not passage:
-				var delta = pos(b)-pos(a)
-				mesh_box((pos(a)+pos(b))/2+Vector3(0,0.24,0),Vector3(0.10 if delta.x != 0 else 1.95,0.22,1.95 if delta.x != 0 else 0.10),Color("d0c3a6"),world)
+			for pair in board.edges+board.doors:
+				if a in pair and b in pair: passage = true; break
+			if board.zones[a].inside or board.zones[b].inside:
+				if passage:
+					var center = (edge.from+edge.to)/2
+					var opening = (edge.to-edge.from).normalized()*0.22
+					wall_span(edge.from,center-opening)
+					wall_span(center+opening,edge.to)
+				else: wall_span(edge.from,edge.to)
+			else:
+				var p = point_on_board((edge.from+edge.to)/2)
+				var size_ = (edge.to-edge.from)*2
+				mesh_box(p+Vector3(0,0.135,0),Vector3(maxf(0.035,size_.x),0.014,maxf(0.035,size_.y)),Color("c4c3b5"),world)
+		var r = Content.bounds(board.zones[a])
+		if board.zones[a].inside:
+			if r.position.x == 0: wall_span(r.position,Vector2(0,r.end.y))
+			if r.position.y == 0: wall_span(r.position,Vector2(r.end.x,0))
+			if r.end.x == 6: wall_span(Vector2(6,r.position.y),r.end)
+			if r.end.y == 3: wall_span(Vector2(r.position.x,3),r.end)
 	figures = Node3D.new()
 	world.add_child(figures)
 
@@ -343,6 +357,13 @@ func cylinder(p: Vector3,radius: float,height: float,color: Color,parent: Node, 
 func pos(id: String) -> Vector3:
 	var z = board.zones[id]
 	return Vector3(float(z.x)*2.0-5.0,0,float(z.y)*2.0-2.0)
+
+func point_on_board(point: Vector2) -> Vector3:
+	return Vector3(point.x*2-6,0,point.y*2-3)
+
+func wall_span(from: Vector2,to: Vector2) -> void:
+	var size_ = (to-from).abs()*2
+	mesh_box(point_on_board((from+to)/2)+Vector3(0,0.24,0),Vector3(maxf(0.10,size_.x),0.22,maxf(0.10,size_.y)),Color("d0c3a6"),world)
 
 func position_camera() -> void:
 	if camera == null: return
@@ -463,7 +484,7 @@ func refresh() -> void:
 	log_box.text = "\n".join(messages)
 	var occupied = {}
 	for v in s.survivors:
-		if not v.escaped: draw_peg(v.zone,colors[int(v.id)],("ATIVO\n" if v.id == s.active else "")+str(int(v.id)+1),occupied,v.id == s.active,0.8)
+		if not v.escaped: draw_peg(v.zone,colors[int(v.id)],str(int(v.id)+1),occupied,v.id == s.active,0.8)
 	for z in s.zombies:
 		var color = {"walker":Color("bd6060"),"runner":Color("e78455"),"fatty":Color("9d4960"),"abomination":Color("713e58")}.get(z.type,Color.RED)
 		draw_peg(z.zone,color,{"walker":"Z","runner":"R","fatty":"B","abomination":"A"}[z.type],occupied,false,0.95 if z.type == "fatty" else 0.72)
@@ -476,11 +497,12 @@ func refresh() -> void:
 	for id in board.spawns: marker(id,Color("b75857"),"",Vector3(-0.55,0.18,-0.57))
 	for pair in board.doors:
 		if not s.doors.get(door_key(pair[0],pair[1]),false):
-			var delta = pos(pair[1])-pos(pair[0])
-			mesh_box((pos(pair[0])+pos(pair[1]))/2+Vector3(0,0.27,0),Vector3(0.13 if delta.x != 0 else 0.8,0.38,0.8 if delta.x != 0 else 0.13),Color("cf9d58"),figures)
+			var edge = Content.border(board.zones[pair[0]],board.zones[pair[1]])
+			var sideways = edge.direction.x != 0
+			mesh_box(point_on_board((edge.from+edge.to)/2)+Vector3(0,0.27,0),Vector3(0.13 if sideways else 0.8,0.38,0.8 if sideways else 0.13),Color("cf9d58"),figures)
 
 func zone_name(id: String) -> String:
-	return {"w0":"Saída","w1":"Rua oeste","v2":"Cruzamento sul","v3":"Rua sul","v0":"Rua central","v1":"Rua leste","n0":"Cruzamento norte","n1":"Rua norte","n2":"Rua norte","n3":"Entrada norte"}.get(id,board.zones[id].name)
+	return board.zones[id].name
 
 func destinations(preview,active: Dictionary,action: String) -> Array:
 	if active.is_empty() or active.actions <= 0: return []
@@ -603,7 +625,8 @@ func door_key(a: String,b: String) -> String:
 func draw_peg(zone: String,color: Color,text: String,occupied: Dictionary,active: bool,height: float) -> void:
 	var index = int(occupied.get(zone,0))
 	occupied[zone] = index+1
-	var p = pos(zone)+Vector3((index%3-1)*0.48,0.14,(index/3-1)*0.43)
+	var columns = 4 if board.zones[zone].width >= 2 else 2
+	var p = pos(zone)+Vector3((index%columns-(columns-1)/2.0)*0.65,0.14,(index/columns-0.5)*0.58+0.35)
 	if index >= 12: p.y += 0.15*floor(index/12.0)
 	cylinder(p+Vector3(0,0.07,0),0.22,0.14,Color("f5df9d") if active else color.darkened(0.35),figures)
 	cylinder(p+Vector3(0,height*0.43,0),0.14,height*0.6,color,figures,0.09)
@@ -621,7 +644,7 @@ func draw_peg(zone: String,color: Color,text: String,occupied: Dictionary,active
 	l.pixel_size = 0.007
 	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	l.position = p+Vector3(0,height+0.08,0)
-	l.modulate = Color.WHITE
+	l.modulate = Color("ffe6a4") if active else Color.WHITE
 	figures.add_child(l)
 
 func marker(zone: String,color: Color,text: String,offset: Vector3) -> void:
@@ -642,8 +665,8 @@ func board_input(event: InputEvent) -> void:
 			var hit = Plane(Vector3.UP,0.12).intersects_ray(origin,direction)
 			if hit == null: return
 			for id in board.zones:
-				var p = pos(id)
-				if absf(hit.x-p.x) <= 0.98 and absf(hit.z-p.z) <= 0.98:
+				var logical_point = Vector2((hit.x+6)/2,(hit.z+3)/2)
+				if Content.bounds(board.zones[id]).has_point(logical_point):
 					selected = id
 					if mode != "inspect":
 						var action = mode

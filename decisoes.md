@@ -38,6 +38,7 @@ Início de desenvolvimento autorizado em D-014. Não há decisão aceita sobre r
 - T-001: Godot 4.7.2 disponível, GDScript e Compatibility; Windows para validação local.
 - T-002: regras em RefCounted separadas da cena; host autoritativo ENet como primeiro laboratório. Integração Steam posterior.
 - T-003: peças/mesa procedurais próprias, sem arte final; dados parciais explicitamente laboratório. Não substitui o objetivo de M0 fiel.
+- T-004: MAP-001 usa áreas de tamanhos diferentes, não uma ação por célula. Versão de conteúdo `m0-lab-v2-map12` rejeita saves antigos, preservando arquivo e estado atual. É uma correção reversível da implementação, não alteração aprovada das regras físicas.
 
 ## Feedback observado — 17/10/2026
 

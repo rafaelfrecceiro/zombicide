@@ -166,6 +166,10 @@ func load_game(path: String = "") -> bool:
 	if mode == "client": return false
 	var payload = Storage.read(path)
 	if payload.is_empty(): payload = Storage.read(path+".bak")
+	var saved_state = payload.get("state",{})
+	if saved_state is Dictionary and saved_state.get("content","") == "m0-lab-v1":
+		rejected.emit("Este save usa o mapa antigo de 18 células. Inicie uma nova missão; o arquivo foi preservado.")
+		return false
 	var trial = Rules.new()
 	trial.start(1)
 	if not trial.restore(payload):
