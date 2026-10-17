@@ -19,6 +19,7 @@
 | D-013 | 17/10/2026 | Pausar a partida quando um participante desconectar e aguardar seu retorno, sem transferir controle automaticamente | Usuário aceitou a proposta; retomada deve preservar estado e decisões pendentes. Tratamento da perda do anfitrião, timeout e retomada após fechar o jogo ainda precisam ser especificados |
 
 | D-014 | 17/10/2026 | Formalizar e iniciar o recorte M0 | Usuário autorizou “pode seguir pra esse M0” após a proposta de primeiro recorte jogável; inclui seis sobreviventes, dois participantes, regras, dados, save e retomada |
+| D-015 | 17/10/2026 | Priorizar a apresentação de direções de arte agora | Usuário pediu “agora eu quero ja as direções de arte do jogo, para começar a ver direito”; autoriza produzir alternativas, não consolida uma delas |
 
 ## Propostas de origem e situação atual
 
@@ -30,6 +31,9 @@
 | P-004 | Usar placeholders próprios no experimento | Validar regras antes da produção visual; não define redesign | [Arte](direcao-arte.md) |
 | P-005 | Testar uma amostra de mesa 3D antes de produzir todo o conteúdo | Poses fixas aceitas em D-007; execução do experimento, tabuleiro plano e câmera continuam propostas para avaliar seleção, aglomeração e custo real | [Arte](direcao-arte.md) |
 | P-006 | Preparar missão e distribuir os seis sobreviventes antes de abrir a mesa | Salas privadas por convite aceitas em D-011; sequência de preparação, integração de convites e hospedagem continuam propostas | [Online/Godot](specs/NET-001.md) |
+| P-007 | A — Mesa de Colecionador | Recomendada: tile plano ilustrado e miniaturas de resina; esforço médio | [Arte e mockups](direcao-arte.md) |
+| P-008 | B — Quadrinhos Urbanos | Miniaturas pintadas, contornos e cartões gráficos; esforço médio | [Arte e mockups](direcao-arte.md) |
+| P-009 | C — Diorama Urbano | Cenário em volume, miniaturas pintadas e HUD tático; esforço alto | [Arte e mockups](direcao-arte.md) |
 
 Início de desenvolvimento autorizado em D-014. Não há decisão aceita sobre redesenho de arte, mudanças de regras, comercialização, expansões ou multiplayer assíncrono. Salas públicas ficam fora do escopo inicial por D-011.
 

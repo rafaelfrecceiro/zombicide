@@ -29,4 +29,4 @@ A revisão [MAP-001](specs/MAP-001.md) corrige zonas, portas, distâncias e vis�
 
 ![Mesa de laboratório e interface de rolagem](qa/artifacts/dice-screen.png)
 
-Arte de peões e tabuleiro é provisória para validar interação e regras; a direção final não foi escolhida.
+Arte do runtime continua provisória. Já existem [três direções com mockups](arte/direcoes/README.md): A — Mesa de Colecionador, B — Quadrinhos Urbanos e C — Diorama Urbano. [Especificações e comparação](direcao-arte.md). Escolha pendente; imagens conceituais ainda não implementadas no jogo.

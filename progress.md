@@ -21,6 +21,8 @@
 | ZOM-008 | QA e primeiro commit | concluida | Runner completo passou; commit 5010948 enviado a origin/main | ZOM-003 parcial a ZOM-006 | — |
 | ZOM-009 | Orientação e legibilidade após primeiro contato | em-andamento | Revisão UX-001 implementada e testes passam; usuário consegue selecionar, mover, atacar e lançar sem instrução externa | ZOM-004 | Codex / reteste do usuário |
 | ZOM-010 | Transcrição do mapa e regressões de visão | concluida | MAP-001 confronta pp.9–10/36; zonas/portas/setup revistos, distâncias/visão/clique/save cobertos | ZOM-002 parcial | — |
+| ZOM-011 | Três direções de arte comparáveis | concluida | PNG por direção, HUD/peças/cenário, paleta/tipo/feedback, custos, recomendação e prompts persistidos | Pedido explícito 17/10 | — |
+| ZOM-012 | Amostra de arte escolhida na engine | planejada | Após escolha: tile, peça humana, ameaças e UI funcional com captura/movimento nas resoluções-alvo | Escolha entre propostas ZOM-011 | — |
 
 ## Entregas e evidências
 
@@ -31,6 +33,7 @@
 | ZOM-004 / ZOM-009 | src/ui/table.gd, board_hints.gd, main.tscn | ui_test.gd: **22/22 headless**, **24/24 GPU** em 1440×900; clique em zonas grandes e duas capturas; primeira tela e ajuda em 1280×800 inspecionadas | Primeiro layout rejeitado pelo usuário; nova versão aguarda reteste humano |
 | ZOM-005 | src/net/session.gd | Dois processos ENet localhost: host/client aprovados; comando alheio rejeitado; pausa, sessão cliente recriada e reconectada | Internet e Steam não testados |
 | ZOM-006 | src/core/storage.gd, session.gd | Save em disco conserva números inteiros, RNG, decisões e ordem; backup e validação de schema/conteúdo | Migração de host, Cloud e recuperação de falha de hardware não testados |
+| ZOM-011 | direcao-arte.md; arte/direcoes/{a-mesa-colecionador,b-quadrinhos-urbanos,c-diorama-urbano}/gameplay-v1.png e prompt.md; manifesto.json | Três PNGs image_gen, cada um 1672×941 RGB, inspecionados e verificados com Pillow; dimensões/hashes persistidos | Conceitos estáticos com desvios registrados; escolha pendente, sem implementação/benchmark Godot |
 
 Último runner completo: `qa/runs/d3a0cc4d/`, comando `.\qa\run-tests.ps1 -Render`, exit code 0. Inclui o ajuste final de distribuição/rótulos e verificações explícitas de porta fechada e aviso de save antigo. Execuções anteriores preservadas em `27b80cc2`, `map-labels`, `6cbf28a7` e `338ecca4`. Logs/JSON ignorados no Git; scripts e [resumo QA](qa/README.md) versionados. Capturas atuais: [dados](qa/artifacts/dice-screen.png), [destinos legais](qa/artifacts/legal-movement.png), [primeiros passos](qa/artifacts/first-steps.png) e [ajuda inicial](qa/artifacts/intro.png).
 
@@ -63,7 +66,7 @@ Solo local permite testar os seis peões. Para duas pessoas: host cria mesa com 
 
 ## Próxima ação
 
-ZOM-009: retestar a nova orientação com o usuário antes de considerar a interface compreensível. ZOM-002/ZOM-003: inventariar as seis fichas adultas e cartas oficiais aplicáveis, substituir dados de laboratório por conteúdo com evidência e implementar/testar as exceções. Fazer também uma revisão independente do mapa e uma partida completa. Manter peões provisórios até direção final. ZOM-007 deve tratar Steam e teste externo em rodada própria.
+Prioridade atual do usuário: escolher/ajustar A — Mesa de Colecionador, B — Quadrinhos Urbanos ou C — Diorama Urbano; recomendação A, sem aprovação inferida. Depois executar ZOM-012 com amostra na engine antes de ampliar a produção. ZOM-009 continua pendente de reteste humano. ZOM-002/ZOM-003: inventariar fichas adultas e cartas oficiais, substituir fixtures e testar exceções; também revisão independente do mapa e partida completa. ZOM-007 trata Steam/teste externo posteriormente.
 
 ## Histórico — 17/10/2026
 
@@ -74,3 +77,5 @@ Primeiro contato humano: usuário considerou arte/layout ruins e mal conseguiu j
 Usuário pediu “vamos seguir”, sem confirmar aprovação da arte ou reteste. ZOM-010 corrigiu a aproximação de mapa: ruas passam a cruzar a emenda, sala oeste alongada é uma zona, três entradas externas, Runner/Fatty juntos no norte. Visão usa a direção das aberturas e não vira esquinas. Piso, destaque e clique compartilham limites; peões foram mais espaçados, com número e base ativa destacados. Conteúdo passa a `m0-lab-v2-map12`; saves antigos são rejeitados sem alteração da missão/arquivo. Regras 72/72, UI 22/22 headless e 24/24 GPU, rede host/cliente aprovados. Nenhuma alegação de M0 integral ou arte final.
 
 Nova versão aberta no runtime Godot para reteste, PID 8924, janela “Zombicide — M0 em construção (DEBUG)” respondendo; `qa/playtest-map.log` confirma Compatibility/Intel Iris Xe, sem erros no início. Isso confirma abertura, não conclusão de playtest humano.
+
+Pedido de direções de arte: produzidas três propostas com mesma situação de ataque e organização de HUD, variando resina/mesa física, quadrinhos pintados e diorama volumétrico. Imagens, prompts integrais, produção e riscos preservados; inspeção constatou desvios de mapa/contadores/identidade, explicitados como limites dos conceitos. Recomendação A; usuário ainda escolhe ou combina. Código do jogo não alterado, não houve novo teste runtime nesta rodada documental/visual. As contagens QA acima são da implementação anterior.

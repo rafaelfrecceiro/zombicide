@@ -1,0 +1,35 @@
+{
+  "data": "2026-10-17",
+  "estado": "propostas-aguardando-escolha",
+  "metodo": "image_gen integrada; tres chamadas de geracao nova com briefings independentes",
+  "uso": "mockups conceituais; nao screenshots Godot nem assets oficiais/validados de producao",
+  "imagens": [
+    {
+      "arquivo": "arte/direcoes/a-mesa-colecionador/gameplay-v1.png",
+      "dimensoes": [
+        1672,
+        941
+      ],
+      "modo": "RGB",
+      "sha256": "1652d1f33e0a61c0045749975f462bb31bfb52dcd1c33b47c39923233ad05507"
+    },
+    {
+      "arquivo": "arte/direcoes/b-quadrinhos-urbanos/gameplay-v1.png",
+      "dimensoes": [
+        1672,
+        941
+      ],
+      "modo": "RGB",
+      "sha256": "9fe4e01a06c8e937a1a498600c7ddf0c6f6536957198758d03e32bcec39dd95d"
+    },
+    {
+      "arquivo": "arte/direcoes/c-diorama-urbano/gameplay-v1.png",
+      "dimensoes": [
+        1672,
+        941
+      ],
+      "modo": "RGB",
+      "sha256": "978ac7370fbacb933d4bdc910b8597bf172d6e2747903b626ceda9e882d05cb9"
+    }
+  ]
+}
