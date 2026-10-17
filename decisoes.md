@@ -38,3 +38,9 @@ Início de desenvolvimento autorizado em D-014. Não há decisão aceita sobre r
 - T-001: Godot 4.7.2 disponível, GDScript e Compatibility; Windows para validação local.
 - T-002: regras em RefCounted separadas da cena; host autoritativo ENet como primeiro laboratório. Integração Steam posterior.
 - T-003: peças/mesa procedurais próprias, sem arte final; dados parciais explicitamente laboratório. Não substitui o objetivo de M0 fiel.
+
+## Feedback observado — 17/10/2026
+
+O usuário disse: “essas artes e layout são totalmente prototipos, certo? pois está horrivel, mal conseguir jogar algo, pois não entendi nada”. Isso registra rejeição da apresentação inicial e dificuldade de compreensão. Não é aprovação de nova arte nem de mudanças nas regras.
+
+Resposta de implementação reversível: [UX-001](specs/UX-001.md), com guia de primeiros passos, contexto da ação e destinos legais. Nova apresentação ainda depende de reteste humano; direção final continua em aberto.
