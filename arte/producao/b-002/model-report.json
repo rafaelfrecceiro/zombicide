@@ -1,0 +1,33 @@
+{
+  "blender": "5.2.2 LTS",
+  "models": [
+    {
+      "id": "survivor_01",
+      "triangles_including_hidden_props": 8520,
+      "rig": false,
+      "body_height_blender": 1.64,
+      "engine_normalization": 0.66
+    },
+    {
+      "id": "walker",
+      "triangles_including_hidden_props": 6920,
+      "rig": false,
+      "body_height_blender": 1.64,
+      "engine_normalization": 0.66
+    },
+    {
+      "id": "runner",
+      "triangles_including_hidden_props": 6920,
+      "rig": false,
+      "body_height_blender": 1.64,
+      "engine_normalization": 0.66
+    },
+    {
+      "id": "fatty",
+      "triangles_including_hidden_props": 7508,
+      "rig": false,
+      "body_height_blender": 1.64,
+      "engine_normalization": 0.66
+    }
+  ]
+}

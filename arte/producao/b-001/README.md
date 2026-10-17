@@ -1,5 +1,7 @@
 # B-001 — Primeira amostra implementada
 
+Registro histórico da primeira amostra. Refinamento vigente em [B-002](../b-002/README.md): quatro modelos substituídos, fonte condensada licenciada e lista de inspeção implementadas. Fontes/assets B-001 preservados; cinco sobreviventes continuam em uso.
+
 Direção escolhida pelo usuário: **B — Quadrinhos Urbanos**, D-016 (“a B”), 17/10/2026. É a direção vigente; A/C e a recomendação anterior ficam preservadas como histórico. Esta amostra não encerra produção/qualidade visual nem paridade de regras.
 
 ## Conteúdo real

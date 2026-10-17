@@ -264,15 +264,29 @@ func offer_loot(card: String) -> void:
 func set_pending(p: Dictionary) -> void:
 	s.pending = p
 
-func begin_attack(cmd: Dictionary,v: Dictionary,target: String) -> String:
+func attack_info(cmd: Dictionary,v: Dictionary,target: String) -> Dictionary:
+	if v.get("actions",0) <= 0: return {"ok":false,"error":"Sem ações restantes."}
+	if not map.zones.has(target): return {"ok":false,"error":"Zona inválida."}
 	var slot = int(cmd.get("slot",0))
-	if slot < 0 or slot > 1: return "Use uma arma equipada em uma das mãos."
+	if slot < 0 or slot > 1: return {"ok":false,"error":"Use uma arma equipada em uma das mãos."}
 	var card = v.inventory[slot]
 	var weapon = defs.get(card,{})
-	if not weapon.has("range"): return "Este item não é uma arma equipada."
+	if not weapon.has("range"): return {"ok":false,"error":"Este item não é uma arma equipada."}
 	var d = distance(v.zone,target)
-	if d < weapon.range[0] or d > weapon.range[1] or not visible(v.zone,target): return "Alvo fora de alcance ou visão."
-	if weapon.mode == "melee" and target != v.zone: return "Ataque corpo a corpo exige a mesma zona."
+	if d < weapon.range[0] or d > weapon.range[1] or not visible(v.zone,target): return {"ok":false,"error":"Alvo fora de alcance ou visão."}
+	if weapon.mode == "melee" and target != v.zone: return {"ok":false,"error":"Ataque corpo a corpo exige a mesma zona."}
+	var dice = int(weapon.dice)
+	if card != "molotov" and cmd.get("dual",false):
+		if not weapon.get("dual",false) or v.inventory[1-slot] != card: return {"ok":false,"error":"Dual exige armas idênticas e compatíveis nas duas mãos."}
+		dice *= 2
+	return {"ok":true,"card":card,"name":weapon.name,"dice":dice,"accuracy":weapon.accuracy,"damage":weapon.damage,"distance":d,"cost":1,"noise":weapon.noise,"mode":weapon.mode}
+
+func begin_attack(cmd: Dictionary,v: Dictionary,target: String) -> String:
+	var info = attack_info(cmd,v,target)
+	if not info.ok: return info.error
+	var slot = int(cmd.get("slot",0))
+	var card = info.card
+	var weapon = defs[card]
 	v.actions -= 1
 	if weapon.noise: add_noise(v.zone)
 	if card == "molotov":
@@ -282,10 +296,7 @@ func begin_attack(cmd: Dictionary,v: Dictionary,target: String) -> String:
 		if not survivors_at(target).is_empty(): finish("defeat")
 		note("Molotov resolveu seu efeito na zona.")
 		return ""
-	var dice = weapon.dice
-	if cmd.get("dual",false):
-		if not weapon.get("dual",false) or v.inventory[1-slot] != card: return "Dual exige armas idênticas e compatíveis nas duas mãos."
-		dice *= 2
+	var dice = info.dice
 	set_pending({"kind":"roll","owner":v.owner,"actor":v.id,"target":target,"weapon":card,"dice":dice,"prompt":"Lance %d dado(s). Precisão %d+, dano %d." % [dice,weapon.accuracy,weapon.damage]})
 	return ""
 

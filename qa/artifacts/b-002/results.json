@@ -1,0 +1,76 @@
+{
+  "data": "2026-10-17",
+  "engine": "4.7.2.stable.official.ed1daf0bf",
+  "renderer": "Compatibility / OpenGL 3.3 / Intel Iris Xe",
+  "general_run": "bbc4dda2",
+  "rules": {
+    "checks": 72,
+    "failures": [],
+    "passed": 72
+  },
+  "ui_headless": {
+    "checks": 27,
+    "failures": [],
+    "passed": 27
+  },
+  "ui_gpu": {
+    "checks": 29,
+    "failures": [],
+    "passed": 29
+  },
+  "host": {
+    "message": "Host observed pause, credential rejoin and preserved ownership",
+    "ok": true,
+    "side": "host",
+    "stage": 3
+  },
+  "client": {
+    "message": "Client command rejected, legal move and credential reconnect preserved",
+    "ok": true,
+    "side": "client",
+    "stage": 6
+  },
+  "resolutions": [
+    {
+      "refinement": {
+        "checks": 17,
+        "failures": [],
+        "passed": 17,
+        "png_dimensions": "(1280, 800)",
+        "window": "(1280, 800)"
+      },
+      "art": {
+        "checks": 10,
+        "failures": [],
+        "motion": "positions and GPU frames sampled; not a human playtest or FPS benchmark",
+        "passed": 10,
+        "resolution": "(1280, 800)"
+      },
+      "run": "b002-delivery-1280x800",
+      "requested": "1280x800"
+    },
+    {
+      "refinement": {
+        "checks": 17,
+        "failures": [],
+        "passed": 17,
+        "png_dimensions": "(1920, 1061)",
+        "window": "(1920, 1061)"
+      },
+      "art": {
+        "checks": 10,
+        "failures": [],
+        "motion": "positions and GPU frames sampled; not a human playtest or FPS benchmark",
+        "passed": 10,
+        "resolution": "(1920, 1061)"
+      },
+      "run": "b002-delivery-1920x1080",
+      "requested": "1920x1080"
+    }
+  ],
+  "limitations": [
+    "Sem playtest humano ou benchmark",
+    "Sem internet, Steam ou exportacao standalone",
+    "1920x1080 pedido limitado a 1920x1061 real"
+  ]
+}

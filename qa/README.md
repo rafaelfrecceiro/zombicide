@@ -17,6 +17,7 @@ O runner cria uma pasta exclusiva em `qa/runs/`; preserva logs e resultados por 
 - `rules_test.gd`: regras/custos, turno, dados pendentes, dano, prioridade, fogo amigo, objetivos/fuga, derrota, RNG/save, incompatibilidade/corrupção/backup, transferência e pausa; MAP-001 cobre setup, portas, distâncias e visão sem curvas.
 - `ui_test.gd`: cena real, botões, atlas/retrato correspondente, cartões/ações dentro da janela, projeção de clique inclusive nas áreas grandes, rejeição com motivo, save antigo preservado/rejeitado, prévia de ataque, dados, movimento da peça e câmera; captura quando há GPU.
 - `art_test.gd`: frames antes/durante/depois do tween, posição final, redução de movimento, câmera e grupo de 15 zumbis com resumo visual sem perda no estado. Requer GPU e `--output=<diretorio-absoluto>`.
+- `refinement_test.gd`: galeria isolada de quatro modelos, acessório equipado, prévia dual sem mutação/RNG, confirmação e rolagem manual, faces correspondentes, apresentação sem reaplicar combate, rejeição ilegal e lista completa de grupo denso; seis capturas reais. Requer GPU e `--output=<diretorio-absoluto>`.
 - `network_test.gd`: dois processos reais ENet, controle alheio rejeitado, movimento autorizado, desconexão/pausa e recriação da sessão do convidado recuperando credencial do disco.
 
 Resultados finais e limitações em [progress.md](../progress.md). Captura de referência em [artifacts/dice-screen.png](artifacts/dice-screen.png).
@@ -38,3 +39,15 @@ Substituir caminhos pelo diretório local de QA. Execução desta rodada usou `q
 Isso não testa toda a caixa base, todos os exploits, partida completa com pessoas, internet ou Steam. Estado/fixtures de QA não são um playtest da missão oficial.
 
 Ajuste final de apresentação: `window/stretch/aspect="expand"` removeu letterbox que reduzia o buffer de captura a 1697×1061. UI 29/29 e arte 10/10 repetidos em `qa/runs/b-expand-1920/`; PNG confirmado em 1920×1061. Esse ajuste não modifica regras ou save; capturas B atualizadas.
+
+## Refinamento B-002 — execução atual
+
+Runner `bbc4dda2`: **72/72 regras, 27/27 UI headless, 29/29 UI GPU**, host/client aprovados, exit code 0. Testes adicionais em `b002-delivery-1280x800` e `b002-delivery-1920x1080`: **17/17 refinamento e 10/10 arte por tamanho**. PNGs confirmados por leitura dos arquivos: **1280×800 e 1920×1061**, sem alegar Full HD exato. Galeria frontal/rotacionada, confirmação, dados pendentes/resultado e inspeção de 14 zumbis foram inspecionados visualmente. Resultados resumidos e capturas em [artifacts/b-002](artifacts/b-002/); logs integrais locais em `qa/runs/`.
+
+Exemplo executado, substituindo o diretório pelo caminho absoluto desta cópia:
+
+```powershell
+Godot_v4.7.2-stable_win64_console.exe --path ./src --script ../qa/refinement_test.gd --position 16000,16000 --resolution 1280x800 -- --output=C:/caminho/absoluto/refinement
+```
+
+Uma tentativa intermediária falhou por consultar `size` no nó raiz 3D da mesa no próprio teste; corrigida para o tamanho da janela. Metadados finais usam as dimensões da imagem capturada, conferidas também com Pillow, em vez do tamanho reportado pela textura. Não houve falha de regra nessa tentativa. Sem aprovação humana, exportação standalone, benchmark, internet ou Steam.

@@ -58,6 +58,12 @@ var miniatures: Dictionary = {}
 var piece_positions: Dictionary = {}
 var piece_nodes: Dictionary = {}
 var reduce_motion = false
+var dice_tray: Control
+var dice_summary: Label
+var gallery: AcceptDialog
+var zone_dialog: AcceptDialog
+var zone_text: RichTextLabel
+var attack_details: Dictionary = {}
 
 func _ready() -> void:
 	build_ui()
@@ -112,6 +118,8 @@ func build_ui() -> void:
 	ui.add_child(root)
 	var theme = Theme.new()
 	theme.default_font_size = 16
+	theme.set_font("font","Button",Art.HEADER_FONT)
+	theme.set_font_size("font_size","Button",19)
 	theme.set_stylebox("normal","Button",box_style(Art.PAPER))
 	theme.set_stylebox("hover","Button",box_style(Color("fff2d7"),Color("42c8d4")))
 	theme.set_stylebox("pressed","Button",box_style(Color("dbcaab")))
@@ -120,6 +128,7 @@ func build_ui() -> void:
 	theme.set_color("font_color","Button",Art.INK)
 	theme.set_color("font_hover_color","Button",Art.INK)
 	theme.set_color("font_pressed_color","Button",Art.INK)
+	theme.set_color("font_focus_color","Button",Art.INK)
 	theme.set_color("font_disabled_color","Button",Color("afae9e"))
 	theme.set_color("font_color","Label",Art.PAPER)
 	root.theme = theme
@@ -129,9 +138,12 @@ func build_ui() -> void:
 	var header = HBoxContainer.new()
 	layout.add_child(header)
 	title = label("ZOMBICIDE / M0 · QUADRINHOS URBANOS",25)
+	title.add_theme_font_override("font",Art.HEADER_FONT)
+	title.add_theme_font_size_override("font_size",28)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	button("Como jogar",func(): help_dialog.popup_centered(Vector2i(640,440)),header)
+	button("Miniaturas",func(): gallery.popup_centered_clamped(Vector2i(980,540),.92),header)
 	button("Partida / salvar",func(): session_dialog.popup_centered(Vector2i(520,510)),header)
 	var warning = label("Direção B escolhida · amostra visual inicial · fichas e baralhos ainda de laboratório",13)
 	warning.modulate = Color("d7b579")
@@ -152,6 +164,8 @@ func build_ui() -> void:
 	var instruction = VBoxContainer.new()
 	guide.add_child(instruction)
 	guide_title = label("",21)
+	guide_title.add_theme_font_override("font",Art.HEADER_FONT)
+	guide_title.add_theme_font_size_override("font_size",25)
 	instruction.add_child(guide_title)
 	guide_body = label("",15)
 	guide_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -181,6 +195,7 @@ func build_ui() -> void:
 	button("Vista superior",func(): elevation = 1.52; position_camera(),camera_row)
 	button("Girar ↶",func(): angle -= 0.25; position_camera(),camera_row)
 	button("Girar ↷",func(): angle += 0.25; position_camera(),camera_row)
+	button("Inspecionar zona",func(): inspect_zone(),camera_row)
 	left.add_child(label("Números: sobreviventes   |   Vermelhos: Z comum · R corredor · B bruto   |   Roda: zoom",13))
 	var card_panel = PanelContainer.new()
 	card_panel.add_theme_stylebox_override("panel",box_style(Art.PAPER))
@@ -204,6 +219,8 @@ func build_ui() -> void:
 	actor_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	actor_header.add_child(actor_summary)
 	actor_title = label("ESCOLHA UMA PEÇA",18)
+	actor_title.add_theme_font_override("font",Art.HEADER_FONT)
+	actor_title.add_theme_font_size_override("font_size",23)
 	actor_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	actor_summary.add_child(actor_title)
 	actor_stats = label("",15)
@@ -213,6 +230,11 @@ func build_ui() -> void:
 	panel.add_child(decision_section)
 	dice_label = label("Dados: —",23)
 	decision_section.add_child(dice_label)
+	dice_tray = preload("res://ui/dice_tray.gd").new()
+	decision_section.add_child(dice_tray)
+	dice_summary = label("",15)
+	dice_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	decision_section.add_child(dice_summary)
 	decisions_box = VBoxContainer.new()
 	decision_section.add_child(decisions_box)
 	weapon_picker = OptionButton.new()
@@ -251,6 +273,18 @@ func build_ui() -> void:
 	ui.add_child(attack_dialog)
 	attack_dialog.confirmed.connect(func(): session.submit(attack_candidate); attack_candidate = {})
 	attack_dialog.canceled.connect(func(): attack_candidate = {})
+	gallery = preload("res://ui/miniature_gallery.gd").new()
+	ui.add_child(gallery)
+	zone_dialog = AcceptDialog.new()
+	zone_dialog.title = "Inspecionar zona"
+	zone_dialog.ok_button_text = "Voltar à mesa"
+	zone_dialog.min_size = Vector2i(510,360)
+	ui.add_child(zone_dialog)
+	zone_text = RichTextLabel.new()
+	zone_text.custom_minimum_size = Vector2(510,330)
+	zone_text.bbcode_enabled = false
+	zone_text.add_theme_font_size_override("normal_font_size",17)
+	zone_dialog.add_child(zone_text)
 	help_dialog = AcceptDialog.new()
 	help_dialog.title = "Como jogar este protótipo"
 	help_dialog.ok_button_text = "Entendi, ir para a mesa"
@@ -296,6 +330,11 @@ func build_ui() -> void:
 		message.text = "Conectando…" if err == OK else "Falha ao conectar (%d)." % err
 		session_dialog.hide(),settings)
 	button("Desconectar cliente",func(): session.disconnect_client(); session_dialog.hide(),settings)
+	var paper_theme = theme.duplicate()
+	paper_theme.set_stylebox("panel","AcceptDialog",box_style(Art.PAPER))
+	paper_theme.set_color("font_color","Label",Art.INK)
+	paper_theme.set_color("default_color","RichTextLabel",Art.INK)
+	for dialog in [attack_dialog,help_dialog,inventory_dialog,session_dialog,zone_dialog,gallery]: dialog.theme = paper_theme
 
 func build_world() -> void:
 	world = Node3D.new()
@@ -464,7 +503,7 @@ func refresh() -> void:
 		b.expand_icon = true
 		b.add_theme_constant_override("icon_max_width",64)
 		b.add_theme_color_override("icon_disabled_color",Color(0.60,0.60,0.60,1))
-		b.add_theme_font_size_override("font_size",14)
+		b.add_theme_font_size_override("font_size",17)
 		b.tooltip_text = "Ativar "+v.name if not locked else "Encerre a ativação atual antes de escolher outra peça."
 		if v.id == s.active: b.add_theme_stylebox_override("normal",box_style(Art.PAPER,Color("42c8d4")))
 	if s.active != last_actor:
@@ -491,7 +530,7 @@ func refresh() -> void:
 			weapon_picker.add_item("Mão %d: %s" % [i+1,defs.get(item,{}).get("name","vazia")])
 		weapon_picker.select(weapon_slot)
 		var weapon = defs.get(active.inventory[weapon_slot],{})
-		weapon_info.text = "%d dado(s) · acerta %d+ · dano %d" % [weapon.get("dice",0),weapon.get("accuracy",0),weapon.get("damage",0)] if weapon.has("range") else "Equipe uma arma em uma das mãos para atacar."
+		weapon_info.text = "Base: %d dado(s) · acerta %d+ · dano %d" % [weapon.get("dice",0),weapon.get("accuracy",0),weapon.get("damage",0)] if weapon.has("range") else "Equipe uma arma em uma das mãos para atacar."
 	var pending = not s.pending.is_empty()
 	weapon_picker.visible = not active.is_empty() and not pending
 	weapon_info.visible = not active.is_empty() and not pending
@@ -522,6 +561,10 @@ func refresh() -> void:
 	render_inventory(active,permitted)
 	decision_section.visible = pending or not s.dice.is_empty()
 	dice_label.text = "Lance os dados" if pending and s.pending.kind == "roll" else "Dados: "+("—" if s.dice.is_empty() else "  ".join(s.dice.map(func(v): return str(v))))
+	dice_tray.display(s.dice,int(s.pending.get("dice",0)) if pending and s.pending.kind == "roll" else 0,reduce_motion)
+	dice_tray.visible = not s.dice.is_empty() or (pending and s.pending.kind == "roll")
+	dice_summary.text = "Pronto para lançar. O jogo resolve os resultados." if pending and s.pending.kind == "roll" else last_roll_summary(s)
+	dice_summary.visible = dice_tray.visible
 	if pending:
 		var p = s.pending
 		var prompt = label(p.prompt,16)
@@ -533,6 +576,7 @@ func refresh() -> void:
 			roll_button.custom_minimum_size.y = 54
 			roll_button.add_theme_stylebox_override("normal",box_style(Art.RED))
 			roll_button.add_theme_color_override("font_color",Art.PAPER)
+			roll_button.add_theme_color_override("font_focus_color",Art.PAPER)
 		else:
 			for value in s.get("choices",[]):
 				var choice = str(value)
@@ -544,6 +588,7 @@ func refresh() -> void:
 				elif p.kind == "trade": text = "Aceitar" if choice == "yes" else "Recusar"
 				button(text,func(): session.submit({"action":"choose","choice":choice}),decisions_box,p.owner != session.role or s.paused)
 	update_guide(s,active)
+	if zone_dialog.visible: update_inspector()
 	var messages = s.log.filter(func(line): return not str(line).begins_with("M0 em construção"))
 	log_box.text = "\n".join(messages)
 	var occupied = {}
@@ -705,7 +750,11 @@ func draw_peg(zone: String,color: Color,text: String,occupied: Dictionary,active
 	cylinder(Vector3(0,0.035,0),0.25,0.07,Art.INK,piece)
 	cylinder(Vector3(0,0.08,0),0.235,0.045,Color("42d9e4") if active else color,piece)
 	var model_id = "survivor_%02d" % int(text) if text.is_valid_int() else {"Z":"walker","R":"runner","B":"fatty","A":"fatty"}.get(text,"walker")
-	var miniature = Art.miniature(model_id)
+	var equipped = ""
+	if text.is_valid_int():
+		var id = int(text)-1
+		equipped = session.view.survivors[id].inventory[weapon_slot if session.view.active == id else 0]
+	var miniature = Art.miniature(model_id,equipped)
 	miniature.position = Vector3(0,0.10,0)
 	miniature.scale = Vector3.ONE*(0.88 if text.is_valid_int() else (0.95 if text == "B" else 0.87))
 	miniature.rotation.y = 0.30
@@ -765,13 +814,48 @@ func confirm_attack(zone: String) -> void:
 	var v = s.survivors[int(s.active)]
 	var weapon = defs.get(v.inventory[weapon_slot],{})
 	attack_candidate = {"action":"attack","zone":zone,"slot":weapon_slot,"dual":use_dual}
+	var preview = preload("res://core/rules.gd").new()
+	preview.s = s
+	attack_details = preview.attack_info(attack_candidate,v,zone)
+	if not attack_details.ok:
+		message.text = attack_details.error
+		attack_candidate = {}
+		return
 	var allies = s.survivors.filter(func(other): return not other.escaped and other.zone == zone and other.id != v.id)
-	var lines = ["Zona: "+zone_name(zone),"Arma: "+str(weapon.get("name","nenhuma")),"Precisão: %d+ · Dano: %d · Dados base: %d" % [weapon.get("accuracy",0),weapon.get("damage",0),weapon.get("dice",0)]]
+	var targets = s.zombies.filter(func(z): return z.zone == zone)
+	var lines = ["ALVO · "+zone_name(zone),"%d zumbi(s) · %d outro(s) sobrevivente(s)" % [targets.size(),allies.size()],"",str(attack_details.name).to_upper(),"Custo: 1 ação · Distância: %d zona(s)" % attack_details.distance,"%d dado(s) · Precisão %d+ · Dano por acerto %d" % [attack_details.dice,attack_details.accuracy,attack_details.damage],"Gera ruído" if attack_details.noise else "Ataque silencioso"]
+	var resistant = targets.filter(func(z): return Content.threshold(z.type) > attack_details.damage).size()
+	if resistant > 0: lines.append("%d alvo(s) exigem dano maior que %d por acerto." % [resistant,attack_details.damage])
 	if not allies.is_empty() and weapon.get("mode","") == "ranged": lines.append("ATENÇÃO: há colegas na zona; erros podem causar fogo amigo.")
 	if v.inventory[weapon_slot] == "molotov": lines.append("Molotov elimina todos os atores na zona, incluindo sobreviventes.")
-	lines.append("O sistema valida alcance, visão, custo e equipamento ao confirmar.")
+	lines.append("\nConfirme para gastar a ação e preparar os dados." if attack_details.dice > 0 else "\nConfirme para gastar a ação e resolver o efeito.")
 	attack_dialog.dialog_text = "\n".join(lines)
 	attack_dialog.popup_centered()
+
+func last_roll_summary(s: Dictionary) -> String:
+	for i in range(s.log.size()-1,-1,-1):
+		var entry = str(s.log[i])
+		if entry.begins_with("Dados:") and entry.contains("→"): return entry.get_slice("→",1).strip_edges()+" · o jogo conduz a resolução."
+	return "Resultado da última rolagem."
+
+func inspect_zone() -> void:
+	update_inspector()
+	zone_dialog.popup_centered_clamped(Vector2i(560,420),.90)
+
+func update_inspector() -> void:
+	if session == null or session.view.is_empty() or not board.zones.has(selected): return
+	var s = session.view
+	zone_dialog.title = zone_name(selected)+" · todos os atores"
+	var lines = [zone_name(selected).to_upper(),"SALA" if board.zones[selected].inside else "RUA",""]
+	var survivors = s.survivors.filter(func(v): return not v.escaped and v.zone == selected)
+	var zombies = s.zombies.filter(func(z): return z.zone == selected)
+	lines.append("SOBREVIVENTES · %d" % survivors.size())
+	for v in survivors: lines.append("%s · vida %d/3 · %s%s" % [v.name,3-v.wounds,v.owner," · ATIVO" if v.id == s.active else ""])
+	lines.append("\nZUMBIS · %d" % zombies.size())
+	for z in zombies: lines.append("#%d · %s" % [z.id,{"walker":"Walker / comum","runner":"Runner / corredor","fatty":"Fatty / bruto","abomination":"Abominação"}.get(z.type,z.type)])
+	if survivors.is_empty() and zombies.is_empty(): lines.append("Zona vazia.")
+	lines.append("\nA contagem inclui peças resumidas visualmente no tabuleiro.")
+	zone_text.text = "\n".join(lines)
 
 func capture() -> void:
 	for i in range(8): await get_tree().process_frame

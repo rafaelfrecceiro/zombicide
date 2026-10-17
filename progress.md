@@ -22,7 +22,8 @@
 | ZOM-009 | Orientação e legibilidade após primeiro contato | em-andamento | Revisão UX-001 implementada e testes passam; usuário consegue selecionar, mover, atacar e lançar sem instrução externa | ZOM-004 | Codex / reteste do usuário |
 | ZOM-010 | Transcrição do mapa e regressões de visão | concluida | MAP-001 confronta pp.9–10/36; zonas/portas/setup revistos, distâncias/visão/clique/save cobertos | ZOM-002 parcial | — |
 | ZOM-011 | Três direções de arte comparáveis | concluida | PNG por direção, HUD/peças/cenário, paleta/tipo/feedback, custos, recomendação e prompts persistidos | Pedido explícito 17/10 | — |
-| ZOM-012 | Amostra B — Quadrinhos Urbanos na engine | em-andamento | Assets/UI importados e QA técnico aprovado; refinar miniaturas, grupo denso e obter reteste humano | D-016 / ZOM-011 | Codex |
+| ZOM-012 | Amostra B — Quadrinhos Urbanos na engine | em-andamento | Assets/UI e refinamento B-002 implementados; obter reteste humano de leitura e acabamento | D-016 / ZOM-011 | Codex / reteste do usuário |
+| ZOM-013 | Implementar refinamento representativo B-002 | concluida | Quatro modelos editáveis, galeria, tipografia licenciada, prévia, faces de dados e inspeção completa; QA técnico passa | D-017 / ZOM-012 parcial | — |
 
 ## Entregas e evidências
 
@@ -35,8 +36,11 @@
 | ZOM-006 | src/core/storage.gd, session.gd | Save em disco conserva números inteiros, RNG, decisões e ordem; backup e validação de schema/conteúdo | Migração de host, Cloud e recuperação de falha de hardware não testados |
 | ZOM-011 | direcao-arte.md; arte/direcoes/{a-mesa-colecionador,b-quadrinhos-urbanos,c-diorama-urbano}/gameplay-v1.png e prompt.md; manifesto.json | Três PNGs 1672×941; B escolhida pelo usuário em D-016 | São conceitos estáticos; não confundir com captura da amostra |
 | ZOM-012 | arte/producao/b-001; nove .blend editáveis e GLBs; board/portraits/icons; QA em qa/artifacts/b-001 | Blender 5.2.2 concluiu 9 modelos; Godot importou; art_test.gd **10/10** em cada tamanho; frames antes/durante/depois, câmera e 15 zumbis inspecionados | Modelos procedurais simples abaixo do mockup; sem fichas oficiais, benchmark ou playtest humano |
+| ZOM-013 | arte/producao/b-002; quatro .blend/GLB novos; miniature_gallery.gd, dice_tray.gd, attack_info; fonte/OFL | Blender `REFINED_COMPLETE 4`, importação exit 0; **17/17 refinamento, 10/10 arte** em cada janela; seis capturas por tamanho inspecionadas; runner geral aprovado | Só Sobrevivente 01 refinado; estudo angular, sem aceitação humana; sem novas cartas/skills |
 
 Último runner completo: `qa/runs/98855f80/`, comando `.\qa\run-tests.ps1 -Render`, exit code 0: regras 72/72, UI 27/27 headless e 29/29 GPU, host/client aprovados. Rodadas de arte: `b-final-1280` e `b-final-1920`, UI 29/29 e arte 10/10 cada; após ajuste exclusivo de plural, UI 29/29 repetida em `b-delivery-1920`. Tentativa `b-exact-1920` confirmou o mesmo limite da janela: **1920×1061 reais**, apesar do pedido 1920×1080; 1280×800 real confirmado. Capturas e inspeção são desses tamanhos reais, sem alegar Full HD exato validado. Scripts/QA versionados; logs/JSON em qa/runs ignorados. Capturas B atuais em [qa/artifacts/b-001](qa/artifacts/b-001/); capturas antigas preservadas como histórico.
+
+**Execução mais recente — B-002:** runner `qa/runs/bbc4dda2/`, `.\qa\run-tests.ps1 -Render`, exit 0, **72/72 regras, 27/27 UI headless, 29/29 UI GPU, host/client aprovados**. Refinamento em `b002-delivery-1280x800` e `b002-delivery-1920x1080`: **17/17**, arte **10/10** por tamanho. PNGs confirmados em **1280×800 e 1920×1061**, segunda janela limitada pelo desktop. Capturas e resumo versionados em [qa/artifacts/b-002](qa/artifacts/b-002/). A referência ao runner B-001 acima fica como histórico, substituída por esta execução atual.
 
 Render: OpenGL 3.3 / Compatibility / Intel Iris Xe. Nenhuma métrica de performance medida. A interface de rolagem foi movida para o topo depois de a captura mostrar que ficava fora da área visível.
 
@@ -48,7 +52,7 @@ Primeiro commit de código enviado ao GitHub: [5010948](https://github.com/rafae
 2. **Mapa revisado, arte esquemática:** transcrição visual de pp.9–10/36 com 12 zonas (sete salas/cinco ruas), três portas, quatro salas escuras e inimigos iniciais corrigidos. MAP-001 e testes substituem a grade de 18 células. Revisão independente e partida humana completa ainda pendentes. Saves `m0-lab-v1` são incompatíveis; arquivos preservados no carregamento, sem migração automática.
 3. **Regras ainda parciais:** sem habilidades individuais, árvores laranja/vermelha, Rush oficial, abominações especiais, todas as formas de reorganização/troca numa única ação e exceções de inventário fora de decisões pendentes. Eventos de reserva e fluxos centrais têm implementação, mas não toda combinação foi testada.
 4. **Online inicial de laboratório:** sala para host+convidado por endereço/convite; não é lobby Steam nem sistema de até seis conexões pronto. Reconexão conserva identidade local por credencial, não autenticação Steam. Queda do host exige nova sala e restauração, sem migração automática.
-5. **Distribuição/visual:** B escolhida e amostra implementada; nove modelos estáticos produzidos no Blender, com acabamento inicial abaixo do mockup. Sem exportação standalone (templates não encontrados no local padrão), Steam ou partida humana completa. Faltam inspeção de grupo denso por lista, tipografia final, áudio, seleção/foco completos e medida de performance. Full HD exato não validado: janela solicitada 1920×1080 ficou 1920×1061 neste desktop; teste em 1280×800 confirmado.
+5. **Distribuição/visual:** B escolhida e B-002 implementada; quatro modelos refinados substituem os equivalentes B-001, cinco sobreviventes ainda anteriores. Acabamento angular de estudo abaixo do conceito; lista de grupo denso, fonte condensada licenciada e foco nas janelas implementados. Sem exportação standalone (templates não encontrados no local padrão), Steam ou partida humana completa. Faltam áudio, navegação completa por teclado, escala configurável e medida de performance. Full HD exato não validado: janela solicitada 1920×1080 ficou 1920×1061 neste desktop; teste em 1280×800 confirmado.
 
 Nenhuma tarefa de paridade integral está marcada concluída. A primeira entrega é a base técnica editável, identificada como laboratório na própria tela.
 
@@ -67,7 +71,7 @@ Solo local permite testar os seis peões. Para duas pessoas: host cria mesa com 
 
 ## Próxima ação
 
-Direção B escolhida em D-016. Retestar a primeira amostra com usuário; refinar silhueta/acabamento das miniaturas, tipografia e inspeção de grupo denso antes de ampliar produção. ZOM-012/ZOM-009 continuam em andamento. Conferir também Full HD exato em uma configuração que não limite a janela. ZOM-002/ZOM-003: fichas/cartas oficiais, exceções, revisão independente do mapa e partida completa. ZOM-007 trata Steam/teste externo depois.
+Retestar B-002 com o usuário: abrir **Miniaturas**, selecionar Peão 01, mover, conferir ataque e acionar LANÇAR; avaliar leitura e acabamento antes de ampliar elenco. ZOM-012/ZOM-009 continuam em andamento. Corrigir o que o contato humano revelar; depois ZOM-002/ZOM-003: fichas/cartas oficiais, exceções, revisão independente do mapa e partida completa. Conferir Full HD exato em configuração sem limite de janela. ZOM-007 trata Steam/teste externo posteriormente.
 
 ## Histórico — 17/10/2026
 
@@ -86,3 +90,7 @@ Usuário escolheu “a B” (D-016), substituindo a recomendação A como direç
 Ajuste final de apresentação: `window/stretch/aspect="expand"` removeu letterbox que reduzia o buffer de captura a 1697×1061. UI 29/29 e arte 10/10 repetidos em `qa/runs/b-expand-1920/`; PNG confirmado em 1920×1061. Esse ajuste não modifica regras ou save; capturas B atualizadas.
 
 Amostra B aberta para reteste no runtime Godot, PID 35832, janela “Zombicide — M0 em construção (DEBUG)” respondendo; log `qa/playtest-b.log` sem erros no início. Confirma abertura, não aprovação humana da amostra.
+
+Usuário autorizou o próximo refinamento (“pode seguir”, D-017). B-002 substitui quatro miniaturas por malhas conectadas, detalhes de roupa/rosto e silhuetas diferentes; acessórios do Sobrevivente 01 seguem a mão equipada nos quatro tipos suportados. Galeria 3D própria, Barlow Condensed Bold/OFL, prévia compartilhada com validação de regras, bandeja de faces autoritativas e lista rolável de todos os atores implementadas. Piso/retratos preservados. Capturas detectaram figuras pequenas, nomes ocultos pelo pedestal e foco sem contraste; corrigidos. Tentativa de QA intermediária falhou por propriedade errada no nó de teste; corrigida, resultados finais acima. B-001 permanece preservada, utilitários agora importáveis sem regenerar assets. Qualidade visual ainda de estudo; decisão B não equivale à aprovação da execução.
+
+A tentativa de abrir a nova sessão interativa ao entregar B-002 foi rejeitada pela revisão automática de aprovação: retorno `blocked by policy`, sem motivo específico. O comando inteiro não executou; manifesto e resultados foram gravados depois em ação separada. Não alegar sessão B-002 aberta para reteste humano. Launcher e `src/project.godot` disponíveis para execução local; as sessões GPU de QA foram executadas e encerradas normalmente.

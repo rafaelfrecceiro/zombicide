@@ -34,3 +34,5 @@ Essas lacunas impedem chamar a entrega de M0 integral fiel. O objetivo aprovado 
 - [Steam lobbies](https://partner.steamgames.com/doc/features/multiplayer/matchmaking).
 
 Versões e resultados em progress.md. Arte própria produzida por código e image_gen; prompts, blueprint, scripts, fontes .blend e manifesto em arte/producao/b-001. Não houve engenharia reversa de aplicativo Zombicide ou incorporação de assets oficiais de referência.
+
+Refinamento [B-002](../arte/producao/b-002/README.md): quatro novas miniaturas próprias Blender substituem as equivalentes B-001; fontes `.blend`, relatório e hashes preservados. Fonte externa **Barlow Condensed Bold**, Copyright 2017 The Barlow Project Authors, distribuída sob **SIL OFL 1.1**, com licença em `src/assets/b/fonts/OFL.txt` e URL/arquivo/hash no manifesto B-002. A declaração de ausência de imagens/modelos externos não inclui essa fonte tipográfica licenciada. Conteúdo de regras e versão de save permanecem parciais e inalterados.

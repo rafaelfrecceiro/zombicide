@@ -192,6 +192,7 @@ definitions=[
     ('runner',(.57,.29,.18),(.49,.54,.35),1,'runner'),
     ('fatty',(.27,.29,.25),(.48,.50,.34),2,'fatty'),
 ]
-report=[make_model(*definition) for definition in definitions]
-(SOURCES.parent/'model-report.json').write_text(json.dumps({'blender':bpy.app.version_string,'models':report},indent=2)+'\n')
-print('MINIATURES_COMPLETE',len(report))
+if __name__ == '__main__':
+    report=[make_model(*definition) for definition in definitions]
+    (SOURCES.parent/'model-report.json').write_text(json.dumps({'blender':bpy.app.version_string,'models':report},indent=2)+'\n')
+    print('MINIATURES_COMPLETE',len(report))

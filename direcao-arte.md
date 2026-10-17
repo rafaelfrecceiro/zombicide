@@ -118,6 +118,8 @@ Tempos candidatos: seleção 100–150 ms, elevar/deslizar/assentar 250–400 ms
 
 Procedência: conceitos gerados nesta sessão com briefings originais, sem imagens oficiais como entrada. Não são alegação de exclusividade nem pacote visual recuperado do boardgame. Fontes tipográficas e demais assets externos de produção terão fonte/licença registradas antes de incorporar; nenhuma fonte externa instalada nesta rodada.
 
+Atualização B-002: Barlow Condensed Bold incorporada ao projeto, sem instalação global, com SIL OFL 1.1 e fonte registrada no [manifesto de produção](arte/producao/b-002/manifesto.json). A nota acima descreve a rodada inicial dos conceitos.
+
 ## Escolha e validação
 
 **Escolha aceita: B — Quadrinhos Urbanos**, resposta “a B”, D-016 em 17/10/2026. A recomendação A não foi adotada; A/C e prompts ficam preservados como histórico. Iterar na B sem reabrir a escolha para cada asset.
@@ -125,3 +127,5 @@ Procedência: conceitos gerados nesta sessão com briefings originais, sem image
 Recorte de validação da B: um tile, um sobrevivente, três tipos de zumbi, portas/tokens e painel funcional. Conferir seleção, alcance, dados, grupo denso e correspondência retrato/base/peça em 1920×1080/1280×800, com câmera em movimento e superior. Medir contraste/performance e retestar leitura com usuário antes de ampliar.
 
 Rodada de apresentação: três conceitos estáticos inspecionados, sem implementação naquele momento. Após D-016, [amostra B-001](arte/producao/b-001/README.md) integrada à cena: PNG de tabuleiro, atlas de seis retratos, nove modelos estáticos Blender/GLB, cartões creme/contornos e deslocamento da peça inteira em 300 ms. Materiais usam Lambert e contorno após testes em Compatibility; cel shading e tipografia condensada finais seguem pendentes. QA real em 1280×800 e 1920×1061 (janela solicitada 1920×1080 limitada pelo desktop), com amostragem de posições/frames de movimento e câmera; sem playtest humano ou benchmark. Miniaturas ainda têm acabamento bem inferior ao mockup. Evidências atuais no progress.md; a escolha da direção não aprova automaticamente essa primeira execução.
+
+**Iteração vigente: [B-002](arte/producao/b-002/README.md), autorizada em D-017.** Sobrevivente 01 e três zumbis usam novas malhas conectadas, detalhes de roupa/rosto e poses distintas. Galeria de GLBs reais para inspeção; arma visível correspondente à mão selecionada nos quatro acessórios suportados. Cinco sobreviventes permanecem B-001. Tipografia condensada implementada em títulos/botões; janelas claras, foco legível, bandeja de dados e prévia com valores calculados pelo motor. Lista de inspeção cobre horda resumida no tabuleiro. Capturas reais inspecionadas nas duas dimensões acima; acabamento continua de estudo e não reproduz integralmente o conceito. Reteste humano e perfil de desempenho ainda necessários antes da expansão visual.

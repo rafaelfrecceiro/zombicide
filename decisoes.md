@@ -21,6 +21,7 @@
 | D-014 | 17/10/2026 | Formalizar e iniciar o recorte M0 | Usuário autorizou “pode seguir pra esse M0” após a proposta de primeiro recorte jogável; inclui seis sobreviventes, dois participantes, regras, dados, save e retomada |
 | D-015 | 17/10/2026 | Priorizar a apresentação de direções de arte agora | Usuário pediu “agora eu quero ja as direções de arte do jogo, para começar a ver direito”; autoriza produzir alternativas, não consolida uma delas |
 | D-016 | 17/10/2026 | Escolher B — Quadrinhos Urbanos | Usuário respondeu “a B” às três direções; miniaturas pintadas rígidas, tabuleiro ilustrado de contorno forte e interface de cartões claros. A/C preservadas como alternativas históricas; desenvolver amostra na engine antes de ampliar produção |
+| D-017 | 17/10/2026 | Executar o refinamento representativo da direção B | Usuário respondeu “pode seguir” à proposta de refinar um sobrevivente, Walker/Runner/Fatty e combate/dados antes de ampliar o elenco. Autoriza produção da amostra, sem aprovar automaticamente seu acabamento |
 
 ## Propostas de origem e situação atual
 

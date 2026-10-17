@@ -9,3 +9,4 @@ qa/*.json
 qa/*.save
 *.log
 qa/runs/
+__pycache__/
