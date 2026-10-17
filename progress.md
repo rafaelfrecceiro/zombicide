@@ -18,7 +18,7 @@
 | ZOM-005 | Sessão privada e pausa do laboratório | concluida | Dois processos, propriedade, queda e reconexão com credencial do disco | ZOM-003 parcial | — |
 | ZOM-006 | Save e retomada do laboratório | concluida | Roundtrip, RNG e pendências preservados; corrupção rejeitada e backup mantido | ZOM-003 parcial | — |
 | ZOM-007 | Steam e teste externo | planejada | Convite e partida entre redes externas com evidência | ZOM-005 | — |
-| ZOM-008 | QA e primeiro commit | em-andamento | Runner completo passou; commit e push pendentes | ZOM-003 parcial a ZOM-006 | Codex |
+| ZOM-008 | QA e primeiro commit | concluida | Runner completo passou; commit 5010948 enviado a origin/main | ZOM-003 parcial a ZOM-006 | — |
 
 ## Entregas e evidências
 
@@ -33,6 +33,8 @@
 Último runner completo: `qa/runs/338ecca4/`, comando `.\qa\run-tests.ps1 -Render`, exit code 0. Logs individuais e JSON nessa pasta, ignorados no Git; scripts e [resumo QA](qa/README.md) são versionáveis. Captura preservada em [qa/artifacts/dice-screen.png](qa/artifacts/dice-screen.png).
 
 Render: OpenGL 3.3 / Compatibility / Intel Iris Xe. Nenhuma métrica de performance medida. A interface de rolagem foi movida para o topo depois de a captura mostrar que ficava fora da área visível.
+
+Primeiro commit de código enviado ao GitHub: [5010948](https://github.com/rafaelfrecceiro/zombicide/commit/5010948ab3351ceb346969d3a2a94fec08a72bf0). Push de `main` a `origin/main` concluído. Identidade de commit configurada somente neste repositório a partir da conta GitHub autenticada, usando endereço noreply; configuração global não foi alterada.
 
 ## Limitações
 

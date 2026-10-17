@@ -20,4 +20,6 @@ O runner cria uma pasta exclusiva em `qa/runs/`; preserva logs e resultados por 
 
 Resultados finais e limitações em [progress.md](../progress.md). Captura de referência em [artifacts/dice-screen.png](artifacts/dice-screen.png).
 
+Execução completa `338ecca4` em 17/10/2026: 60/60 regras/save; 14/14 UI headless; 15/15 UI GPU incluindo captura; host e cliente aprovados em dois processos. Runner retornou exit code 0. Os testes de UI repetem o mesmo fluxo em ambientes distintos; esses totais não são casos únicos de gameplay somáveis. O frame inspecionado mede 1440×900.
+
 Isso não testa toda a caixa base, todos os exploits, partida completa com pessoas, internet ou Steam. Estado/fixtures de QA não são um playtest da missão oficial.
