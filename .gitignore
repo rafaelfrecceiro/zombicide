@@ -1,0 +1,10 @@
+src/.godot/
+build/
+*.tmp
+*.bak
+qa/*.png
+qa/*.log
+qa/*.json
+qa/*.save
+*.log
+qa/runs/
