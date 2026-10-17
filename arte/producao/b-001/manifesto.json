@@ -1,0 +1,98 @@
+{
+  "data": "2026-10-17",
+  "direcao": "B — Quadrinhos Urbanos",
+  "decisao": "D-016",
+  "estado": "amostra-implementada-em-refinamento",
+  "procedencia_png": "image_gen integrada; prompts e guia nesta pasta; referencia de estilo B gerada, sem imagens oficiais como entrada",
+  "procedencia_modelos": "script Blender proprio, fontes .blend preservadas e GLBs independentes",
+  "versoes": {
+    "blender": "5.2.2 LTS",
+    "godot": "4.7.2.stable.official.ed1daf0bf"
+  },
+  "assets": [
+    {
+      "arquivo": "src/assets/b/board-v1.png",
+      "sha256": "8ebb20d39fffe68e7ea13bbd281ce362a14faa8390c9ec98661cd97595a8af2d",
+      "bytes": 3309841,
+      "dimensoes": [
+        1774,
+        887
+      ]
+    },
+    {
+      "arquivo": "src/assets/b/icons/crate.svg",
+      "sha256": "e5b58a4ca32642ad3de76a346f001deeb4152ea37ae3e311a778da1494b347ae",
+      "bytes": 362
+    },
+    {
+      "arquivo": "src/assets/b/icons/exit.svg",
+      "sha256": "22cd042855b095bfee34cada57698b3fe47f5c88001b3d2667a64b956f63c358",
+      "bytes": 298
+    },
+    {
+      "arquivo": "src/assets/b/icons/objective.svg",
+      "sha256": "7eaace96a3d0741fcdae94693372eed1cb1c94488c5822dc01e88f7a633f6124",
+      "bytes": 264
+    },
+    {
+      "arquivo": "src/assets/b/icons/spawn.svg",
+      "sha256": "050da8ff84c45b97c7a393487ff251838107a706b1e60ca70bcfd0d8fbab5e35",
+      "bytes": 379
+    },
+    {
+      "arquivo": "src/assets/b/models/fatty.glb",
+      "sha256": "fe7a6e9786cbc1c800559cc0f9cd1899e770e43c6eb35c1162cede72feca660f",
+      "bytes": 327508
+    },
+    {
+      "arquivo": "src/assets/b/models/runner.glb",
+      "sha256": "b44e13cca0dd7b5d9e86bf3764b0e07a59633d3903832a47f1678c091964cec2",
+      "bytes": 309268
+    },
+    {
+      "arquivo": "src/assets/b/models/survivor_01.glb",
+      "sha256": "b54b6c8d2df23cd3f22c8635933739bf91c160e2c201adf610792f66923a5003",
+      "bytes": 365388
+    },
+    {
+      "arquivo": "src/assets/b/models/survivor_02.glb",
+      "sha256": "04b63f67d3103a75b9967a74b6a027a8e00d10d017b5ecb03e79083a73eaedc1",
+      "bytes": 334796
+    },
+    {
+      "arquivo": "src/assets/b/models/survivor_03.glb",
+      "sha256": "0da5c7bb70231c80dd154c4c382d924d5a219304a0305d832d56e0e1e036ea29",
+      "bytes": 342444
+    },
+    {
+      "arquivo": "src/assets/b/models/survivor_04.glb",
+      "sha256": "e80c1c4a4a37d65bedf0efc41eb96027e0f035dd149980893d6caafa70446de9",
+      "bytes": 350092
+    },
+    {
+      "arquivo": "src/assets/b/models/survivor_05.glb",
+      "sha256": "3ba3c59b20ff58e21428cd86808855b910fd548879fe32138d482a1d7e94ee13",
+      "bytes": 352116
+    },
+    {
+      "arquivo": "src/assets/b/models/survivor_06.glb",
+      "sha256": "98288f414ef020d30fc11b20b63086545f8d1faa77643919710c6ae5e5b9a5d5",
+      "bytes": 342444
+    },
+    {
+      "arquivo": "src/assets/b/models/walker.glb",
+      "sha256": "f33296eee61e68362212410157328c4340339b7f1f7347ef81bfc097926acaf3",
+      "bytes": 318712
+    },
+    {
+      "arquivo": "src/assets/b/portraits-v1.png",
+      "sha256": "dfe218151c122b3931a6dcbdbd63acb898f9a296a5d82776857f0957023cd00d",
+      "bytes": 3389574,
+      "dimensoes": [
+        1536,
+        1024
+      ]
+    }
+  ],
+  "limites": "nao sao fichas oficiais; modelos iniciais, sem acabamento do mockup; PNG nao tem camadas editaveis; QA nao comprova usabilidade humana"
+}

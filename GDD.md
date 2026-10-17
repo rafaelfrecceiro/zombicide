@@ -33,7 +33,7 @@ Candidato de engenharia: mouse seleciona zona e sobrevivente, painéis de açõe
 
 ## Arte e áudio
 
-[Arte](direcao-arte.md): placeholders próprios procedurais. Referência física preservada para pesquisa; nenhuma imagem do manual em runtime. Sem arte final ou áudio final consolidado.
+[Arte](direcao-arte.md): B — Quadrinhos Urbanos escolhida em D-016. Amostra B-001 usa tabuleiro ilustrado plano, miniaturas pintadas rígidas, retratos e UI gráfica. Modelos iniciais ainda em refinamento; referência física preservada para pesquisa, sem imagens do manual no runtime. Áudio final ainda não definido.
 
 ## Plataforma
 

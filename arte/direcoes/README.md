@@ -1,6 +1,6 @@
 # Galeria — direções visuais
 
-Três propostas para a mesma situação de gameplay. **Conceitos gerados, não capturas Godot. Escolha pendente.** [Briefing/custos/produção](../../direcao-arte.md). Prompts junto das imagens; dimensões/hashes no [manifesto](manifesto.json).
+Três propostas para a mesma situação de gameplay. **Conceitos gerados, não capturas Godot. B escolhida em D-016.** [Briefing/custos/produção](../../direcao-arte.md). Prompts junto das imagens; dimensões/hashes no [manifesto](manifesto.json).
 
 ## A — Mesa de Colecionador
 
@@ -26,4 +26,4 @@ Cenário em volume com paredes baixas, miniaturas pintadas e HUD tático. Mais p
 
 [Prompt C](c-diorama-urbano/prompt.md).
 
-Desvios de texto, contagem, pose e mapa registrados na direção de arte. Regras/mapa lógico continuam como autoridade. Escolher linguagem visual não aprova esses desvios. Nenhuma alteração do runtime nesta rodada.
+Desvios de texto, contagem, pose e mapa registrados na direção de arte. Regras/mapa lógico continuam como autoridade. Escolher linguagem visual não aprova esses desvios. Na apresentação original não houve alteração de runtime; implementação posterior em [B-001](../producao/b-001/README.md).

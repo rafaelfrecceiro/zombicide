@@ -23,7 +23,7 @@ Baralho e elenco de laboratório devem ter identificação explícita. Não inve
 | Spawn | Quatro entradas alternando dois exemplos Walker | Valores das linhas ilustradas pp.15/25; não é deck oficial, sem Rush/extra card real |
 | Sobreviventes | Seis adultos anônimos sem habilidades individuais; amarelo +1 ação | Sem equivalência alegada às fichas; pausa no laranja evita árvore inventada |
 | Mapa | 12 zonas: sete salas e cinco ruas; três portas externas; duas salas escuras por edifício | pp.9–10/36, MAP-001; substitui 18 células, preserva ruas sobre a emenda e sala alongada; arte ainda esquemática |
-| Arte | Geometria e materiais procedurais próprios | Nenhuma imagem oficial em runtime, nenhum modelo de terceiros |
+| Arte | Direção B escolhida: PNGs image_gen, ícones próprios, nove miniaturas estáticas Blender/GLB e UI de cartões | [Procedência B-001](../arte/producao/b-001/README.md); nenhuma imagem/modelo oficial ou de terceiros no runtime; modelos são estudos, não fichas oficiais |
 
 Essas lacunas impedem chamar a entrega de M0 integral fiel. O objetivo aprovado continua sendo preencher e validar o conteúdo oficial, sem redefinir silenciosamente o design como jogo diferente.
 
@@ -33,4 +33,4 @@ Essas lacunas impedem chamar a entrega de M0 integral fiel. O objetivo aprovado 
 - [Camera3D 4.7](https://docs.godotengine.org/en/4.7/classes/class_camera3d.html).
 - [Steam lobbies](https://partner.steamgames.com/doc/features/multiplayer/matchmaking).
 
-Versão executada e resultados em progress.md. Arte produzida por código neste repositório, sem assets externos. Não houve engenharia reversa de um aplicativo Zombicide.
+Versões e resultados em progress.md. Arte própria produzida por código e image_gen; prompts, blueprint, scripts, fontes .blend e manifesto em arte/producao/b-001. Não houve engenharia reversa de aplicativo Zombicide ou incorporação de assets oficiais de referência.

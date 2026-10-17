@@ -1,6 +1,6 @@
 # Direções de arte — Zombicide online
 
-Estado em 17/10/2026: **três propostas entregues, escolha do usuário pendente**. Pedido: “agora eu quero ja as direções de arte do jogo, para começar a ver direito”. [Galeria](arte/direcoes/README.md) · [Progresso](progress.md) · [Decisões](decisoes.md) · [Mapa lógico](specs/MAP-001.md).
+Estado em 17/10/2026: **B — Quadrinhos Urbanos escolhida pelo usuário, D-016; primeira amostra implementada**. Pedido: “agora eu quero ja as direções de arte do jogo, para começar a ver direito”. [Galeria](arte/direcoes/README.md) · [Progresso](progress.md) · [Decisões](decisoes.md) · [Mapa lógico](specs/MAP-001.md).
 
 ## Briefing e evidências
 
@@ -85,7 +85,7 @@ Avaliação de produção, não resultado de usuários ou benchmark:
 | Esforço relativo | Médio | Médio | Alto |
 | Blender | Esculturas/bases | Esculturas/pintura | Esculturas/cenário/otimização |
 
-**Recomendação: A**, por aproximar a mesa física pedida e concentrar modelagem nas miniaturas. Provar primeiro um tile e uma peça legível. É possível solicitar A com miniaturas pintadas de B; ajuste depende da escolha do usuário. C é um caminho mais caro se o volume do cenário for prioridade.
+**Recomendação apresentada antes da escolha: A**, por aproximar a mesa física pedida e concentrar modelagem nas miniaturas. Provar primeiro um tile e uma peça legível. É possível solicitar A com miniaturas pintadas de B; ajuste depende da escolha do usuário. C é um caminho mais caro se o volume do cenário for prioridade.
 
 ## UI/HUD comum proposto
 
@@ -120,8 +120,8 @@ Procedência: conceitos gerados nesta sessão com briefings originais, sem image
 
 ## Escolha e validação
 
-**Escolha pendente:** A, B, C, combinação ou ajustes. Recomendação não é aprovação. Alternativas/prompts preservados.
+**Escolha aceita: B — Quadrinhos Urbanos**, resposta “a B”, D-016 em 17/10/2026. A recomendação A não foi adotada; A/C e prompts ficam preservados como histórico. Iterar na B sem reabrir a escolha para cada asset.
 
-Após escolha, consolidar direção e produzir amostra Godot: um tile, um sobrevivente, três tipos de zumbi, portas/tokens e painel funcional. Conferir seleção, alcance, dados, grupo denso e correspondência retrato/base/peça em 1920×1080/1280×800, com câmera em movimento e superior. Medir contraste/performance e retestar leitura com usuário antes de ampliar.
+Recorte de validação da B: um tile, um sobrevivente, três tipos de zumbi, portas/tokens e painel funcional. Conferir seleção, alcance, dados, grupo denso e correspondência retrato/base/peça em 1920×1080/1280×800, com câmera em movimento e superior. Medir contraste/performance e retestar leitura com usuário antes de ampliar.
 
-Nesta rodada: três conceitos estáticos inspecionados, PNGs locais e manifesto verificados. **Nenhuma direção implementada ou testada em movimento no Godot.** Validação técnica do protótipo anterior continua separada no progress.md.
+Rodada de apresentação: três conceitos estáticos inspecionados, sem implementação naquele momento. Após D-016, [amostra B-001](arte/producao/b-001/README.md) integrada à cena: PNG de tabuleiro, atlas de seis retratos, nove modelos estáticos Blender/GLB, cartões creme/contornos e deslocamento da peça inteira em 300 ms. Materiais usam Lambert e contorno após testes em Compatibility; cel shading e tipografia condensada finais seguem pendentes. QA real em 1280×800 e 1920×1061 (janela solicitada 1920×1080 limitada pelo desktop), com amostragem de posições/frames de movimento e câmera; sem playtest humano ou benchmark. Miniaturas ainda têm acabamento bem inferior ao mockup. Evidências atuais no progress.md; a escolha da direção não aprova automaticamente essa primeira execução.

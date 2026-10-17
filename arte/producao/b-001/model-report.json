@@ -1,0 +1,68 @@
+{
+  "blender": "5.2.2 LTS",
+  "models": [
+    {
+      "name": "survivor_01",
+      "triangles": 8144,
+      "vertices": 4174,
+      "materials": 11,
+      "rig": false
+    },
+    {
+      "name": "survivor_02",
+      "triangles": 6992,
+      "vertices": 3590,
+      "materials": 11,
+      "rig": false
+    },
+    {
+      "name": "survivor_03",
+      "triangles": 7280,
+      "vertices": 3736,
+      "materials": 11,
+      "rig": false
+    },
+    {
+      "name": "survivor_04",
+      "triangles": 7568,
+      "vertices": 3882,
+      "materials": 11,
+      "rig": false
+    },
+    {
+      "name": "survivor_05",
+      "triangles": 7388,
+      "vertices": 3792,
+      "materials": 11,
+      "rig": false
+    },
+    {
+      "name": "survivor_06",
+      "triangles": 7280,
+      "vertices": 3736,
+      "materials": 11,
+      "rig": false
+    },
+    {
+      "name": "walker",
+      "triangles": 7240,
+      "vertices": 3718,
+      "materials": 12,
+      "rig": false
+    },
+    {
+      "name": "runner",
+      "triangles": 6952,
+      "vertices": 3572,
+      "materials": 12,
+      "rig": false
+    },
+    {
+      "name": "fatty",
+      "triangles": 7528,
+      "vertices": 3864,
+      "materials": 12,
+      "rig": false
+    }
+  ]
+}

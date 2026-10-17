@@ -22,7 +22,7 @@
 | ZOM-009 | Orientação e legibilidade após primeiro contato | em-andamento | Revisão UX-001 implementada e testes passam; usuário consegue selecionar, mover, atacar e lançar sem instrução externa | ZOM-004 | Codex / reteste do usuário |
 | ZOM-010 | Transcrição do mapa e regressões de visão | concluida | MAP-001 confronta pp.9–10/36; zonas/portas/setup revistos, distâncias/visão/clique/save cobertos | ZOM-002 parcial | — |
 | ZOM-011 | Três direções de arte comparáveis | concluida | PNG por direção, HUD/peças/cenário, paleta/tipo/feedback, custos, recomendação e prompts persistidos | Pedido explícito 17/10 | — |
-| ZOM-012 | Amostra de arte escolhida na engine | planejada | Após escolha: tile, peça humana, ameaças e UI funcional com captura/movimento nas resoluções-alvo | Escolha entre propostas ZOM-011 | — |
+| ZOM-012 | Amostra B — Quadrinhos Urbanos na engine | em-andamento | Assets/UI importados e QA técnico aprovado; refinar miniaturas, grupo denso e obter reteste humano | D-016 / ZOM-011 | Codex |
 
 ## Entregas e evidências
 
@@ -30,12 +30,13 @@
 | --- | --- | --- | --- |
 | ZOM-001 | README, GDD, specs, AGENTS, decisões e índices do hub | Checkout vazio clonado; versão retorna 4.7.2.stable.official.ed1daf0bf | Não é código recuperado do jogo |
 | ZOM-003 / ZOM-010 | src/core/rules.gd, content.gd, specs/MAP-001.md | rules_test.gd: **72/72**; 12 regressões adicionais de zonas, visão, distâncias, setup e versão de save | Fichas/decks incompletos; transcrição visual sem revisão independente |
-| ZOM-004 / ZOM-009 | src/ui/table.gd, board_hints.gd, main.tscn | ui_test.gd: **22/22 headless**, **24/24 GPU** em 1440×900; clique em zonas grandes e duas capturas; primeira tela e ajuda em 1280×800 inspecionadas | Primeiro layout rejeitado pelo usuário; nova versão aguarda reteste humano |
+| ZOM-004 / ZOM-009 / ZOM-012 | src/ui/table.gd, board_hints.gd, comic_art.gd e assets/b | ui_test.gd: **27/27 headless**, **29/29 GPU**; assets reais, atlas correspondente ao ator, ações/dados visíveis, movimento amostrado | Direção B aceita; primeira execução na engine ainda aguarda reteste humano |
 | ZOM-005 | src/net/session.gd | Dois processos ENet localhost: host/client aprovados; comando alheio rejeitado; pausa, sessão cliente recriada e reconectada | Internet e Steam não testados |
 | ZOM-006 | src/core/storage.gd, session.gd | Save em disco conserva números inteiros, RNG, decisões e ordem; backup e validação de schema/conteúdo | Migração de host, Cloud e recuperação de falha de hardware não testados |
-| ZOM-011 | direcao-arte.md; arte/direcoes/{a-mesa-colecionador,b-quadrinhos-urbanos,c-diorama-urbano}/gameplay-v1.png e prompt.md; manifesto.json | Três PNGs image_gen, cada um 1672×941 RGB, inspecionados e verificados com Pillow; dimensões/hashes persistidos | Conceitos estáticos com desvios registrados; escolha pendente, sem implementação/benchmark Godot |
+| ZOM-011 | direcao-arte.md; arte/direcoes/{a-mesa-colecionador,b-quadrinhos-urbanos,c-diorama-urbano}/gameplay-v1.png e prompt.md; manifesto.json | Três PNGs 1672×941; B escolhida pelo usuário em D-016 | São conceitos estáticos; não confundir com captura da amostra |
+| ZOM-012 | arte/producao/b-001; nove .blend editáveis e GLBs; board/portraits/icons; QA em qa/artifacts/b-001 | Blender 5.2.2 concluiu 9 modelos; Godot importou; art_test.gd **10/10** em cada tamanho; frames antes/durante/depois, câmera e 15 zumbis inspecionados | Modelos procedurais simples abaixo do mockup; sem fichas oficiais, benchmark ou playtest humano |
 
-Último runner completo: `qa/runs/d3a0cc4d/`, comando `.\qa\run-tests.ps1 -Render`, exit code 0. Inclui o ajuste final de distribuição/rótulos e verificações explícitas de porta fechada e aviso de save antigo. Execuções anteriores preservadas em `27b80cc2`, `map-labels`, `6cbf28a7` e `338ecca4`. Logs/JSON ignorados no Git; scripts e [resumo QA](qa/README.md) versionados. Capturas atuais: [dados](qa/artifacts/dice-screen.png), [destinos legais](qa/artifacts/legal-movement.png), [primeiros passos](qa/artifacts/first-steps.png) e [ajuda inicial](qa/artifacts/intro.png).
+Último runner completo: `qa/runs/98855f80/`, comando `.\qa\run-tests.ps1 -Render`, exit code 0: regras 72/72, UI 27/27 headless e 29/29 GPU, host/client aprovados. Rodadas de arte: `b-final-1280` e `b-final-1920`, UI 29/29 e arte 10/10 cada; após ajuste exclusivo de plural, UI 29/29 repetida em `b-delivery-1920`. Tentativa `b-exact-1920` confirmou o mesmo limite da janela: **1920×1061 reais**, apesar do pedido 1920×1080; 1280×800 real confirmado. Capturas e inspeção são desses tamanhos reais, sem alegar Full HD exato validado. Scripts/QA versionados; logs/JSON em qa/runs ignorados. Capturas B atuais em [qa/artifacts/b-001](qa/artifacts/b-001/); capturas antigas preservadas como histórico.
 
 Render: OpenGL 3.3 / Compatibility / Intel Iris Xe. Nenhuma métrica de performance medida. A interface de rolagem foi movida para o topo depois de a captura mostrar que ficava fora da área visível.
 
@@ -47,7 +48,7 @@ Primeiro commit de código enviado ao GitHub: [5010948](https://github.com/rafae
 2. **Mapa revisado, arte esquemática:** transcrição visual de pp.9–10/36 com 12 zonas (sete salas/cinco ruas), três portas, quatro salas escuras e inimigos iniciais corrigidos. MAP-001 e testes substituem a grade de 18 células. Revisão independente e partida humana completa ainda pendentes. Saves `m0-lab-v1` são incompatíveis; arquivos preservados no carregamento, sem migração automática.
 3. **Regras ainda parciais:** sem habilidades individuais, árvores laranja/vermelha, Rush oficial, abominações especiais, todas as formas de reorganização/troca numa única ação e exceções de inventário fora de decisões pendentes. Eventos de reserva e fluxos centrais têm implementação, mas não toda combinação foi testada.
 4. **Online inicial de laboratório:** sala para host+convidado por endereço/convite; não é lobby Steam nem sistema de até seis conexões pronto. Reconexão conserva identidade local por credencial, não autenticação Steam. Queda do host exige nova sala e restauração, sem migração automática.
-5. **Distribuição/visual:** sem exportação Windows standalone (templates não encontrados no diretório padrão consultado), publicação Steam, arte final ou modelos Blender produzidos. O jogo executou no editor/runtime Godot com GPU real. Não houve partida humana completa de M0.
+5. **Distribuição/visual:** B escolhida e amostra implementada; nove modelos estáticos produzidos no Blender, com acabamento inicial abaixo do mockup. Sem exportação standalone (templates não encontrados no local padrão), Steam ou partida humana completa. Faltam inspeção de grupo denso por lista, tipografia final, áudio, seleção/foco completos e medida de performance. Full HD exato não validado: janela solicitada 1920×1080 ficou 1920×1061 neste desktop; teste em 1280×800 confirmado.
 
 Nenhuma tarefa de paridade integral está marcada concluída. A primeira entrega é a base técnica editável, identificada como laboratório na própria tela.
 
@@ -66,7 +67,7 @@ Solo local permite testar os seis peões. Para duas pessoas: host cria mesa com 
 
 ## Próxima ação
 
-Prioridade atual do usuário: escolher/ajustar A — Mesa de Colecionador, B — Quadrinhos Urbanos ou C — Diorama Urbano; recomendação A, sem aprovação inferida. Depois executar ZOM-012 com amostra na engine antes de ampliar a produção. ZOM-009 continua pendente de reteste humano. ZOM-002/ZOM-003: inventariar fichas adultas e cartas oficiais, substituir fixtures e testar exceções; também revisão independente do mapa e partida completa. ZOM-007 trata Steam/teste externo posteriormente.
+Direção B escolhida em D-016. Retestar a primeira amostra com usuário; refinar silhueta/acabamento das miniaturas, tipografia e inspeção de grupo denso antes de ampliar produção. ZOM-012/ZOM-009 continuam em andamento. Conferir também Full HD exato em uma configuração que não limite a janela. ZOM-002/ZOM-003: fichas/cartas oficiais, exceções, revisão independente do mapa e partida completa. ZOM-007 trata Steam/teste externo depois.
 
 ## Histórico — 17/10/2026
 
@@ -79,3 +80,9 @@ Usuário pediu “vamos seguir”, sem confirmar aprovação da arte ou reteste.
 Nova versão aberta no runtime Godot para reteste, PID 8924, janela “Zombicide — M0 em construção (DEBUG)” respondendo; `qa/playtest-map.log` confirma Compatibility/Intel Iris Xe, sem erros no início. Isso confirma abertura, não conclusão de playtest humano.
 
 Pedido de direções de arte: produzidas três propostas com mesma situação de ataque e organização de HUD, variando resina/mesa física, quadrinhos pintados e diorama volumétrico. Imagens, prompts integrais, produção e riscos preservados; inspeção constatou desvios de mapa/contadores/identidade, explicitados como limites dos conceitos. Recomendação A; usuário ainda escolhe ou combina. Código do jogo não alterado, não houve novo teste runtime nesta rodada documental/visual. As contagens QA acima são da implementação anterior.
+
+Usuário escolheu “a B” (D-016), substituindo a recomendação A como direção vigente. Integrados tabuleiro/atlas image_gen, nove figuras estáticas originais Blender/GLB, ícones SVG próprios, cartões creme, ação vermelha, retrato correspondente e tween de peça inteira com redução de movimento. Material Toon/cores iniciais ficaram claros demais na captura; corrigidos espaço de cor e Lambert/contorno. Atualização dupla cancelava tween; regressão capturada e corrigida. Câmera agora ajusta limites projetados; grupos acima de 4/8 figuras são resumidos sem perder atores no estado. Testes finais acima aprovados, acabamento e playtest humano pendentes. Prompts, procedência, scripts e fontes editáveis preservados; nenhuma imagem do manual no runtime.
+
+Ajuste final de apresentação: `window/stretch/aspect="expand"` removeu letterbox que reduzia o buffer de captura a 1697×1061. UI 29/29 e arte 10/10 repetidos em `qa/runs/b-expand-1920/`; PNG confirmado em 1920×1061. Esse ajuste não modifica regras ou save; capturas B atualizadas.
+
+Amostra B aberta para reteste no runtime Godot, PID 35832, janela “Zombicide — M0 em construção (DEBUG)” respondendo; log `qa/playtest-b.log` sem erros no início. Confirma abertura, não aprovação humana da amostra.

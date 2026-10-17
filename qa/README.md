@@ -15,13 +15,26 @@ O runner cria uma pasta exclusiva em `qa/runs/`; preserva logs e resultados por 
 ## Cobertura
 
 - `rules_test.gd`: regras/custos, turno, dados pendentes, dano, prioridade, fogo amigo, objetivos/fuga, derrota, RNG/save, incompatibilidade/corrupção/backup, transferência e pausa; MAP-001 cobre setup, portas, distâncias e visão sem curvas.
-- `ui_test.gd`: cena real, botões, projeção de clique inclusive nas áreas grandes, rejeição com motivo, save do mapa antigo preservado/rejeitado, prévia de ataque, botão de lançar e câmera superior; captura de movimento legal e dados quando há GPU.
+- `ui_test.gd`: cena real, botões, atlas/retrato correspondente, cartões/ações dentro da janela, projeção de clique inclusive nas áreas grandes, rejeição com motivo, save antigo preservado/rejeitado, prévia de ataque, dados, movimento da peça e câmera; captura quando há GPU.
+- `art_test.gd`: frames antes/durante/depois do tween, posição final, redução de movimento, câmera e grupo de 15 zumbis com resumo visual sem perda no estado. Requer GPU e `--output=<diretorio-absoluto>`.
 - `network_test.gd`: dois processos reais ENet, controle alheio rejeitado, movimento autorizado, desconexão/pausa e recriação da sessão do convidado recuperando credencial do disco.
 
 Resultados finais e limitações em [progress.md](../progress.md). Captura de referência em [artifacts/dice-screen.png](artifacts/dice-screen.png).
 
-Última execução completa `d3a0cc4d` em 17/10/2026: 72/72 regras/save; 22/22 UI headless; 24/24 UI GPU incluindo duas capturas; host e cliente aprovados em dois processos. Runner retornou exit code 0. Inclui os ajustes finais de espaçamento/rótulos e verificações explícitas de porta fechada e aviso de save antigo. Os testes de UI repetem o mesmo fluxo em ambientes distintos; esses totais não são casos únicos de gameplay somáveis. Frames de dados e movimento em 1440×900 inspecionados; primeira tela e ajuda atualizadas também renderizadas e inspecionadas em 1280×800. Execuções anteriores preservadas em `27b80cc2`, `map-labels`, `6cbf28a7` e `338ecca4`.
+Última execução completa `98855f80` em 17/10/2026: 72/72 regras/save; 27/27 UI headless; 29/29 UI GPU incluindo duas capturas; host e cliente aprovados em dois processos. Exit code 0. Após ajuste apenas de plural, UI GPU novamente 29/29 em `b-delivery-1920`. Casos se repetem entre ambientes; não somar como testes únicos de gameplay.
 
-Capturas versionadas: [movimento](artifacts/legal-movement.png), [dados](artifacts/dice-screen.png), [início](artifacts/first-steps.png), [ajuda](artifacts/intro.png). Conteúdo atual `m0-lab-v2-map12`; iniciar missão nova ao retestar o mapa.
+Amostra B: UI GPU 29/29 e arte 10/10 em `b-final-1280` e `b-final-1920`. Dimensões reais: 1280×800 e **1920×1061**; a janela solicitada em 1920×1080 foi limitada pelo desktop, inclusive na tentativa `b-exact-1920`. Não alegar Full HD exato validado. Capturas de dados, movimento amostrado, vista superior e grupo denso inspecionadas. Primeira tentativa detectou tween cancelado pela segunda atualização da UI; corrigido antes dos resultados finais. Não há medição de FPS, observação humana contínua de fluidez ou playtest de compreensão.
+
+Capturas atuais versionadas em [B-001](artifacts/b-001/): gameplay-1280/gameplay-1920, movement-1920, motion-before/during/after, camera, dense e intro. Capturas de laboratório anteriores preservadas fora dessa subpasta. Conteúdo de regras permanece `m0-lab-v2-map12`; arte não muda a versão de save. Modelos/produção em [B-001](../arte/producao/b-001/README.md).
+
+Exemplo efetivamente executado para arte, da raiz do repositório:
+
+```powershell
+Godot_v4.7.2-stable_win64_console.exe --path ./src --script ../qa/art_test.gd --position 16000,16000 --resolution 1280x800 --log-file C:/caminho/absoluto/art.log -- --output=C:/caminho/absoluto/art
+```
+
+Substituir caminhos pelo diretório local de QA. Execução desta rodada usou `qa/runs/b-final-1280/art` com caminho absoluto. Esses scripts geram fixtures isoladas, não alteram o save do usuário.
 
 Isso não testa toda a caixa base, todos os exploits, partida completa com pessoas, internet ou Steam. Estado/fixtures de QA não são um playtest da missão oficial.
+
+Ajuste final de apresentação: `window/stretch/aspect="expand"` removeu letterbox que reduzia o buffer de captura a 1697×1061. UI 29/29 e arte 10/10 repetidos em `qa/runs/b-expand-1920/`; PNG confirmado em 1920×1061. Esse ajuste não modifica regras ou save; capturas B atualizadas.

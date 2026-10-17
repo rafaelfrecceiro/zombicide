@@ -9,6 +9,7 @@ func text_at(text: String,point: Vector2,size_: int,color: Color) -> void:
 	var font = ThemeDB.fallback_font
 	var width = font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,size_).x
 	var origin = point-Vector2(width/2,0)
+	draw_rect(Rect2(origin+Vector2(-4,-size_),Vector2(width+8,size_+5)),Color(0.035,0.045,0.045,0.86))
 	draw_string(font,origin+Vector2(1,1),text,HORIZONTAL_ALIGNMENT_LEFT,-1,size_,Color(0.02,0.03,0.04,0.95))
 	draw_string(font,origin,text,HORIZONTAL_ALIGNMENT_LEFT,-1,size_,color)
 
@@ -53,3 +54,8 @@ func _draw() -> void:
 			badge = "ENTRADA ZUMBI"
 			badge_color = Color("ffb3ab")
 		if not badge.is_empty(): text_at(badge,top,13,badge_color)
+		var survivors = s.survivors.filter(func(v): return not v.escaped and v.zone == id).size()
+		var zombies = s.zombies.filter(func(z): return z.zone == id).size()
+		var capacity = 8 if zone.width >= 2 else 4
+		if survivors+zombies > capacity:
+			text_at("%d S / %d Z · %d à vista" % [survivors,zombies,capacity],center+Vector2(0,-16),13,Color("ffe0a0"))

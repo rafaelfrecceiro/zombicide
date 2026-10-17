@@ -1,4 +1,5 @@
 src/.godot/
+*.blend1
 build/
 *.tmp
 *.bak

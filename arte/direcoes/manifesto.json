@@ -1,6 +1,6 @@
 {
   "data": "2026-10-17",
-  "estado": "propostas-aguardando-escolha",
+  "estado": "B-escolhida-D-016",
   "metodo": "image_gen integrada; tres chamadas de geracao nova com briefings independentes",
   "uso": "mockups conceituais; nao screenshots Godot nem assets oficiais/validados de producao",
   "imagens": [
@@ -31,5 +31,10 @@
       "modo": "RGB",
       "sha256": "978ac7370fbacb933d4bdc910b8597bf172d6e2747903b626ceda9e882d05cb9"
     }
-  ]
+  ],
+  "escolha": {
+    "direcao": "b-quadrinhos-urbanos",
+    "fonte": "resposta explicita do usuario: a B",
+    "decisao": "D-016"
+  }
 }

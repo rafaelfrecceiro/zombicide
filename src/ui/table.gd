@@ -2,10 +2,11 @@ extends Node3D
 
 const Session = preload("res://net/session.gd")
 const Content = preload("res://core/content.gd")
+const Art = preload("res://ui/comic_art.gd")
 var session
 var board = Content.board()
 var defs = Content.weapons()
-var colors = [Color("edb564"),Color("70bdc9"),Color("cf798f"),Color("9c99da"),Color("9ec47e"),Color("dd926b")]
+var colors = [Color("43bcc4"),Color("d2a040"),Color("cc6551"),Color("a087bd"),Color("91a36c"),Color("7099c5")]
 var camera: Camera3D
 var world: Node3D
 var figures: Node3D
@@ -29,7 +30,7 @@ var from_slot = 0
 var trade_target = 1
 var angle = 0.0
 var elevation = 0.94
-var zoom = 10.5
+var zoom = 8.4
 var ip: LineEdit
 var code: LineEdit
 var status: Label
@@ -52,6 +53,11 @@ var decision_section: VBoxContainer
 var legal_zones: Array = []
 var hints: Control
 var last_actor = -1
+var actor_portrait: TextureRect
+var miniatures: Dictionary = {}
+var piece_positions: Dictionary = {}
+var piece_nodes: Dictionary = {}
+var reduce_motion = false
 
 func _ready() -> void:
 	build_ui()
@@ -85,12 +91,12 @@ func button(text: String,fn: Callable,parent: Node, disabled: bool = false) -> B
 	parent.add_child(b)
 	return b
 
-func box_style(bg: Color,border: Color = Color("354653")) -> StyleBoxFlat:
+func box_style(bg: Color,border: Color = Color("191c1d")) -> StyleBoxFlat:
 	var style = StyleBoxFlat.new()
 	style.bg_color = bg
 	style.border_color = border
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(5)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(1)
 	style.content_margin_left = 10
 	style.content_margin_right = 10
 	style.content_margin_top = 7
@@ -102,28 +108,32 @@ func build_ui() -> void:
 	add_child(ui)
 	var root = PanelContainer.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	root.add_theme_stylebox_override("panel",box_style(Color("111923")))
+	root.add_theme_stylebox_override("panel",box_style(Color("1c2021")))
 	ui.add_child(root)
 	var theme = Theme.new()
 	theme.default_font_size = 16
-	theme.set_stylebox("normal","Button",box_style(Color("253642")))
-	theme.set_stylebox("hover","Button",box_style(Color("344e5c"),Color("7dbfc4")))
-	theme.set_stylebox("pressed","Button",box_style(Color("456a76")))
-	theme.set_stylebox("disabled","Button",box_style(Color("1c252f")))
-	theme.set_color("font_color","Button",Color("eee8db"))
-	theme.set_color("font_color","Label",Color("eee8db"))
+	theme.set_stylebox("normal","Button",box_style(Art.PAPER))
+	theme.set_stylebox("hover","Button",box_style(Color("fff2d7"),Color("42c8d4")))
+	theme.set_stylebox("pressed","Button",box_style(Color("dbcaab")))
+	theme.set_stylebox("disabled","Button",box_style(Color("494b46")))
+	theme.set_stylebox("focus","Button",box_style(Color(0,0,0,0),Color("42c8d4")))
+	theme.set_color("font_color","Button",Art.INK)
+	theme.set_color("font_hover_color","Button",Art.INK)
+	theme.set_color("font_pressed_color","Button",Art.INK)
+	theme.set_color("font_disabled_color","Button",Color("afae9e"))
+	theme.set_color("font_color","Label",Art.PAPER)
 	root.theme = theme
 	var layout = VBoxContainer.new()
 	layout.add_theme_constant_override("separation",9)
 	root.add_child(layout)
 	var header = HBoxContainer.new()
 	layout.add_child(header)
-	title = label("ZOMBICIDE · M0",26)
+	title = label("ZOMBICIDE / M0 · QUADRINHOS URBANOS",25)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	button("Como jogar",func(): help_dialog.popup_centered(Vector2i(640,440)),header)
 	button("Partida / salvar",func(): session_dialog.popup_centered(Vector2i(520,510)),header)
-	var warning = label("Protótipo de regras · arte e conteúdo provisórios",13)
+	var warning = label("Direção B escolhida · amostra visual inicial · fichas e baralhos ainda de laboratório",13)
 	warning.modulate = Color("d7b579")
 	layout.add_child(warning)
 	info = label("",16)
@@ -137,7 +147,7 @@ func build_ui() -> void:
 	left.add_theme_constant_override("separation",6)
 	main.add_child(left)
 	var guide = PanelContainer.new()
-	guide.add_theme_stylebox_override("panel",box_style(Color("213c4a"),Color("65a9b5")))
+	guide.add_theme_stylebox_override("panel",box_style(Art.TEAL))
 	left.add_child(guide)
 	var instruction = VBoxContainer.new()
 	guide.add_child(instruction)
@@ -172,15 +182,33 @@ func build_ui() -> void:
 	button("Girar ↶",func(): angle -= 0.25; position_camera(),camera_row)
 	button("Girar ↷",func(): angle += 0.25; position_camera(),camera_row)
 	left.add_child(label("Números: sobreviventes   |   Vermelhos: Z comum · R corredor · B bruto   |   Roda: zoom",13))
+	var card_panel = PanelContainer.new()
+	card_panel.add_theme_stylebox_override("panel",box_style(Art.PAPER))
+	card_panel.custom_minimum_size.x = 314
+	var card_theme = theme.duplicate()
+	card_theme.set_color("font_color","Label",Art.INK)
+	card_panel.theme = card_theme
+	main.add_child(card_panel)
 	panel = VBoxContainer.new()
-	panel.custom_minimum_size.x = 310
 	panel.add_theme_constant_override("separation",7)
-	main.add_child(panel)
-	actor_title = label("Escolha um sobrevivente",22)
-	panel.add_child(actor_title)
+	card_panel.add_child(panel)
+	var actor_header = HBoxContainer.new()
+	panel.add_child(actor_header)
+	actor_portrait = TextureRect.new()
+	actor_portrait.texture = Art.portrait(0)
+	actor_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	actor_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	actor_portrait.custom_minimum_size = Vector2(90,96)
+	actor_header.add_child(actor_portrait)
+	var actor_summary = VBoxContainer.new()
+	actor_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actor_header.add_child(actor_summary)
+	actor_title = label("ESCOLHA UMA PEÇA",18)
+	actor_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	actor_summary.add_child(actor_title)
 	actor_stats = label("",15)
 	actor_stats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	panel.add_child(actor_stats)
+	actor_summary.add_child(actor_stats)
 	decision_section = VBoxContainer.new()
 	panel.add_child(decision_section)
 	dice_label = label("Dados: —",23)
@@ -199,8 +227,7 @@ func build_ui() -> void:
 	actions_box.add_theme_constant_override("v_separation",7)
 	panel.add_child(actions_box)
 	button("Inventário / trocar",func(): inventory_dialog.popup_centered(Vector2i(630,550)),panel)
-	button("Outras ações",func(): session_dialog.popup_centered(Vector2i(520,510)),panel)
-	status = label("",13)
+	status = label("",12)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	panel.add_child(status)
 	layout.add_child(label("SEUS SOBREVIVENTES · clique em uma peça disponível para ativar",14))
@@ -212,7 +239,7 @@ func build_ui() -> void:
 	message.custom_minimum_size.y = 22
 	layout.add_child(message)
 	log_box = RichTextLabel.new()
-	log_box.custom_minimum_size.y = 50
+	log_box.custom_minimum_size.y = 34
 	log_box.scroll_following = true
 	log_box.add_theme_font_size_override("normal_font_size",13)
 	layout.add_child(log_box)
@@ -246,6 +273,10 @@ func build_ui() -> void:
 	button("Salvar missão",func(): session.save_game(),settings)
 	button("Continuar save",func(): session.load_game(); session_dialog.hide(),settings)
 	button("Fazer ruído (gasta 1 ação)",func(): session.submit({"action":"noise"}); session_dialog.hide(),settings)
+	var motion = CheckButton.new()
+	motion.text = "Reduzir movimento das peças"
+	motion.toggled.connect(func(enabled): reduce_motion = enabled)
+	settings.add_child(motion)
 	settings.add_child(label("Conexão privada de teste · 2 pessoas",17))
 	ip = LineEdit.new()
 	ip.text = "127.0.0.1"
@@ -272,31 +303,39 @@ func build_world() -> void:
 	var environment = WorldEnvironment.new()
 	var env = Environment.new()
 	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color("1b2532")
+	env.background_color = Color("202425")
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color("d0dbdf")
-	env.ambient_light_energy = 0.65
+	env.ambient_light_energy = 0.45
 	environment.environment = env
 	world.add_child(environment)
 	var light = DirectionalLight3D.new()
 	light.rotation_degrees = Vector3(-55,-32,0)
-	light.light_energy = 1.5
+	light.light_energy = 0.8
 	light.shadow_enabled = true
 	world.add_child(light)
 	camera = Camera3D.new()
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
 	world.add_child(camera)
 	position_camera()
-	mesh_box(Vector3(0,-0.35,0),Vector3(14,0.55,8),Color("624a37"),world)
-	mesh_box(Vector3(0,-0.03,0),Vector3(12.15,0.12,6.15),Color("171c21"),world)
+	mesh_box(Vector3(0,-0.35,0),Vector3(13,0.55,7),Color("272a28"),world)
+	mesh_box(Vector3(0,-0.03,0),Vector3(12.15,0.12,6.15),Art.INK,world)
+	var board_plane = MeshInstance3D.new()
+	var plane = PlaneMesh.new()
+	plane.size = Vector2(12,6)
+	board_plane.mesh = plane
+	var printed = StandardMaterial3D.new()
+	printed.albedo_texture = Art.BOARD
+	printed.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	board_plane.material_override = printed
+	board_plane.position.y = 0.132
+	world.add_child(board_plane)
 	for id in board.zones:
 		var z = board.zones[id]
 		var base = Color("686b5d") if z.inside else Color("46505b")
 		if z.inside and z.dark: base = Color("3e514e")
 		var floor_mesh = mesh_box(pos(id)+Vector3(0,0.06,0),Vector3(z.width*2-0.07,0.12,z.height*2-0.07),base,world)
 		floors[id] = {"mesh":floor_mesh,"base":base}
-		if not z.inside:
-			for dx in [-0.57,-0.19,0.19,0.57]: mesh_box(pos(id)+Vector3(dx,0.131,0.08),Vector3(0.17,0.012,0.55),Color("b4b2a4"),world)
 	# Room and street boundaries use the same extents as the rules and hit testing.
 	for a in board.zones:
 		for b in board.zones:
@@ -312,6 +351,9 @@ func build_world() -> void:
 					var opening = (edge.to-edge.from).normalized()*0.22
 					wall_span(edge.from,center-opening)
 					wall_span(center+opening,edge.to)
+					if board.zones[a].inside and board.zones[b].inside:
+						var vertical_wall = edge.direction.x != 0
+						mesh_box(point_on_board(center)+Vector3(0,0.146,0),Vector3(0.16 if vertical_wall else 0.44,0.02,0.44 if vertical_wall else 0.16),Color("99886a"),world)
 				else: wall_span(edge.from,edge.to)
 			else:
 				var p = point_on_board((edge.from+edge.to)/2)
@@ -330,6 +372,7 @@ func material(color: Color) -> StandardMaterial3D:
 	var m = StandardMaterial3D.new()
 	m.albedo_color = color
 	m.roughness = 0.8
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	return m
 
 func mesh_box(p: Vector3,size: Vector3,color: Color,parent: Node) -> MeshInstance3D:
@@ -363,16 +406,22 @@ func point_on_board(point: Vector2) -> Vector3:
 
 func wall_span(from: Vector2,to: Vector2) -> void:
 	var size_ = (to-from).abs()*2
-	mesh_box(point_on_board((from+to)/2)+Vector3(0,0.24,0),Vector3(maxf(0.10,size_.x),0.22,maxf(0.10,size_.y)),Color("d0c3a6"),world)
+	mesh_box(point_on_board((from+to)/2)+Vector3(0,0.15,0),Vector3(maxf(0.055,size_.x),0.035,maxf(0.055,size_.y)),Art.INK,world)
 
 func position_camera() -> void:
 	if camera == null: return
-	var aspect = maxf(1.0,float(viewport.size.x)/maxf(1.0,float(viewport.size.y)))
-	var width = 14*absf(cos(angle))+8*absf(sin(angle))
-	var depth = 14*absf(sin(angle))+8*absf(cos(angle))
-	camera.size = maxf(width/aspect,depth*sin(elevation)+1.1*cos(elevation))*1.08*(zoom/10.5)
 	camera.position = Vector3(sin(angle)*cos(elevation),sin(elevation),cos(angle)*cos(elevation))*18
 	camera.look_at(Vector3.ZERO,Vector3.FORWARD if elevation > 1.5 else Vector3.UP)
+	camera.size = 1.0
+	var projected = Rect2()
+	var first = true
+	for x in [-6.4,6.4]:
+		for z in [-3.35,3.35]:
+			for y in [0.0,1.20]:
+				var point = camera.unproject_position(Vector3(x,y,z))
+				if first: projected = Rect2(point,Vector2.ZERO); first = false
+				else: projected = projected.expand(point)
+	camera.size = maxf(projected.size.x/maxf(1.0,viewport.size.x*0.96),projected.size.y/maxf(1.0,viewport.size.y*0.94))*(zoom/8.4)
 
 func clear(node: Node) -> void:
 	for child in node.get_children():
@@ -386,15 +435,20 @@ func refresh() -> void:
 	clear(actions_box)
 	clear(inventory_box)
 	clear(decisions_box)
+	for identity in piece_nodes:
+		if is_instance_valid(piece_nodes[identity]): piece_positions[identity] = piece_nodes[identity].position
 	clear(figures)
+	miniatures.clear()
+	piece_nodes.clear()
 	var active = s.survivors[int(s.active)] if s.active >= 0 else {}
 	var permitted = not active.is_empty() and active.owner == session.role and not s.paused and s.outcome == "" and s.pending.is_empty()
 	var phase = "Partida pausada" if s.paused else ("Vitória" if s.outcome == "victory" else ("Derrota" if s.outcome == "defeat" else "Sua vez" if s.players[int(s.active_player)] == session.role else "Vez do amigo"))
 	info.text = "Rodada %d · %s   |   Objetivos %d/2 · Caixas %d/2   →   Voltar à SAÍDA com todos" % [s.round,phase,2-s.objectives.size(),2-s.crates.size()]
 	status.text = "Você controla os seis sobreviventes neste teste solo." if session.mode == "offline" else "Sala privada · você controla as peças de "+session.role
 	for v in s.survivors:
-		var text = v.name+"\n"+str(v.actions)+" ações"
-		if v.id == s.active: text = "▶ "+v.name+"\nATIVO · "+str(v.actions)+" ações"
+		var action_count = str(v.actions)+(" ação" if v.actions == 1 else " ações")
+		var text = v.name+"\n"+action_count
+		if v.id == s.active: text = "▶ "+v.name+"\nATIVO · "+action_count
 		elif v.escaped: text = v.name+"\nESCAPOU"
 		elif v.id in s.done: text = v.name+"\nCONCLUÍDO"
 		var locked = v.escaped or v.id in s.done or v.owner != session.role or s.paused or (s.active >= 0 and s.active != v.id)
@@ -405,11 +459,14 @@ func refresh() -> void:
 			else: message.text = "Esta é a peça ativa. Escolha uma ação à direita."
 			,survivor_box,locked)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.custom_minimum_size.y = 54
-		b.add_theme_color_override("font_color",colors[int(v.id)])
-		b.add_theme_font_size_override("font_size",15)
+		b.custom_minimum_size.y = 84
+		b.icon = Art.portrait(int(v.id))
+		b.expand_icon = true
+		b.add_theme_constant_override("icon_max_width",64)
+		b.add_theme_color_override("icon_disabled_color",Color(0.60,0.60,0.60,1))
+		b.add_theme_font_size_override("font_size",14)
 		b.tooltip_text = "Ativar "+v.name if not locked else "Encerre a ativação atual antes de escolher outra peça."
-		if v.id == s.active: b.add_theme_stylebox_override("normal",box_style(Color("345261"),Color("8bdce4")))
+		if v.id == s.active: b.add_theme_stylebox_override("normal",box_style(Art.PAPER,Color("42c8d4")))
 	if s.active != last_actor:
 		weapon_slot = 0
 		equip_from = -1
@@ -417,12 +474,15 @@ func refresh() -> void:
 		last_actor = s.active
 	weapon_picker.clear()
 	if active.is_empty():
+		actor_portrait.modulate = Color(0.6,0.6,0.6,1)
 		actor_title.text = "Nenhuma peça ativa"
 		actor_stats.text = "Clique em um cartão abaixo do tabuleiro."
 		weapon_info.text = ""
 	else:
+		actor_portrait.texture = Art.portrait(int(active.id))
+		actor_portrait.modulate = Color.WHITE
 		actor_title.text = active.name+" · ATIVO"
-		actor_stats.text = "%d ações restantes\nFerimentos %d/3 · Adrenalina %d" % [active.actions,active.wounds,active.ap]
+		actor_stats.text = "%d %s\nVIDA %d/3\nADRENALINA %d" % [active.actions,"AÇÃO" if active.actions == 1 else "AÇÕES",3-active.wounds,active.ap]
 		if not defs.get(active.inventory[weapon_slot],{}).has("range"):
 			for i in range(2):
 				if defs.get(active.inventory[i],{}).has("range"): weapon_slot = i; break
@@ -447,10 +507,12 @@ func refresh() -> void:
 		var b = button(entry[0],func():
 			if action == "search": session.submit({"action":"search"})
 			else: set_mode(action),actions_box,not reason.is_empty())
-		b.custom_minimum_size = Vector2(148,44)
+		b.custom_minimum_size = Vector2(142,40)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.tooltip_text = reason if not reason.is_empty() else {"move":"Escolha uma zona verde no tabuleiro.","attack":"Escolha uma zona em alcance; depois confirme e lance os dados.","open":"Selecione uma porta destacada.","search":"Compre equipamento nesta sala; uma busca por ativação."}[action]
-		if mode == action: b.add_theme_stylebox_override("normal",box_style(Color("3c665b"),Color("8ee3b0")))
+		if mode == action:
+			b.add_theme_stylebox_override("normal",box_style(Art.RED))
+			b.add_theme_color_override("font_color",Art.PAPER)
 	if not active.is_empty():
 		for entry in [["Coletar objetivo","objective",s.objectives],["Pegar arma especial","crate",s.crates]]:
 			var action = str(entry[1])
@@ -469,6 +531,8 @@ func refresh() -> void:
 		if p.kind == "roll":
 			var roll_button = button("LANÇAR %d DADO(S)" % p.dice,func(): session.submit({"action":"roll"}),decisions_box,p.owner != session.role or s.paused)
 			roll_button.custom_minimum_size.y = 54
+			roll_button.add_theme_stylebox_override("normal",box_style(Art.RED))
+			roll_button.add_theme_color_override("font_color",Art.PAPER)
 		else:
 			for value in s.get("choices",[]):
 				var choice = str(value)
@@ -484,17 +548,17 @@ func refresh() -> void:
 	log_box.text = "\n".join(messages)
 	var occupied = {}
 	for v in s.survivors:
-		if not v.escaped: draw_peg(v.zone,colors[int(v.id)],str(int(v.id)+1),occupied,v.id == s.active,0.8)
+		if not v.escaped: draw_peg(v.zone,colors[int(v.id)],str(int(v.id)+1),occupied,v.id == s.active,0.8,"s"+str(v.id))
 	for z in s.zombies:
 		var color = {"walker":Color("bd6060"),"runner":Color("e78455"),"fatty":Color("9d4960"),"abomination":Color("713e58")}.get(z.type,Color.RED)
-		draw_peg(z.zone,color,{"walker":"Z","runner":"R","fatty":"B","abomination":"A"}[z.type],occupied,false,0.95 if z.type == "fatty" else 0.72)
+		draw_peg(z.zone,color,{"walker":"Z","runner":"R","fatty":"B","abomination":"A"}[z.type],occupied,false,0.95 if z.type == "fatty" else 0.72,"z"+str(z.id))
 	for id in floors:
 		var m = floors[id].mesh.material_override
 		m.albedo_color = floors[id].base.lightened(0.13) if id == selected else floors[id].base
-	for id in s.objectives: marker(id,Color("ca6260"),"",Vector3(-0.55,0.18,-0.57))
-	for id in s.crates: marker(id,Color("d5b36a"),"",Vector3(-0.55,0.18,-0.57))
-	marker(board.start,Color("6bb8b5"),"",Vector3(-0.55,0.18,-0.57))
-	for id in board.spawns: marker(id,Color("b75857"),"",Vector3(-0.55,0.18,-0.57))
+	for id in s.objectives: marker(id,Art.RED,"objective",Vector3(-0.55,0.18,-0.37))
+	for id in s.crates: marker(id,Color("d2a040"),"crate",Vector3(-0.55,0.18,-0.37))
+	marker(board.start,Art.TEAL,"exit",Vector3(1.30,0.18,-0.37))
+	for id in board.spawns: marker(id,Art.RED,"spawn",Vector3(1.25,0.18,-0.37))
 	for pair in board.doors:
 		if not s.doors.get(door_key(pair[0],pair[1]),false):
 			var edge = Content.border(board.zones[pair[0]],board.zones[pair[1]])
@@ -622,34 +686,53 @@ func max_ap(s: Dictionary) -> int:
 func door_key(a: String,b: String) -> String:
 	return a+"|"+b if a < b else b+"|"+a
 
-func draw_peg(zone: String,color: Color,text: String,occupied: Dictionary,active: bool,height: float) -> void:
+func draw_peg(zone: String,color: Color,text: String,occupied: Dictionary,active: bool,height: float,identity: String) -> void:
 	var index = int(occupied.get(zone,0))
 	occupied[zone] = index+1
 	var columns = 4 if board.zones[zone].width >= 2 else 2
+	if index >= columns*2: return # Further actors remain in authoritative state and decision lists.
 	var p = pos(zone)+Vector3((index%columns-(columns-1)/2.0)*0.65,0.14,(index/columns-0.5)*0.58+0.35)
 	if index >= 12: p.y += 0.15*floor(index/12.0)
-	cylinder(p+Vector3(0,0.07,0),0.22,0.14,Color("f5df9d") if active else color.darkened(0.35),figures)
-	cylinder(p+Vector3(0,height*0.43,0),0.14,height*0.6,color,figures,0.09)
-	var sphere = SphereMesh.new()
-	sphere.radius = 0.16
-	sphere.height = 0.32
-	var head = MeshInstance3D.new()
-	head.mesh = sphere
-	head.material_override = material(color.lightened(0.12))
-	figures.add_child(head)
-	head.position = p+Vector3(0,height*0.8,0)
+	var piece = Node3D.new()
+	piece.name = "Piece_"+identity
+	figures.add_child(piece)
+	piece.position = p
+	piece_nodes[identity] = piece
+	if piece_positions.has(identity) and not reduce_motion and piece_positions[identity].distance_to(p) > 0.01:
+		piece.position = piece_positions[identity]+Vector3(0,0.12,0)
+		piece.create_tween().tween_property(piece,"position",p,0.30).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	piece_positions[identity] = p
+	cylinder(Vector3(0,0.035,0),0.25,0.07,Art.INK,piece)
+	cylinder(Vector3(0,0.08,0),0.235,0.045,Color("42d9e4") if active else color,piece)
+	var model_id = "survivor_%02d" % int(text) if text.is_valid_int() else {"Z":"walker","R":"runner","B":"fatty","A":"fatty"}.get(text,"walker")
+	var miniature = Art.miniature(model_id)
+	miniature.position = Vector3(0,0.10,0)
+	miniature.scale = Vector3.ONE*(0.88 if text.is_valid_int() else (0.95 if text == "B" else 0.87))
+	miniature.rotation.y = 0.30
+	piece.add_child(miniature)
+	miniatures[model_id+"-"+str(index)] = miniature
 	var l = Label3D.new()
 	l.text = text
 	l.font_size = 44
 	l.pixel_size = 0.007
 	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	l.position = p+Vector3(0,height+0.08,0)
+	l.position = Vector3(0,1.13,0)
 	l.modulate = Color("ffe6a4") if active else Color.WHITE
-	figures.add_child(l)
+	piece.add_child(l)
 
 func marker(zone: String,color: Color,text: String,offset: Vector3) -> void:
 	var p = pos(zone)+offset
-	mesh_box(p,Vector3(0.75,0.10,0.42),color,figures)
+	mesh_box(p,Vector3(0.51,0.05,0.51),Art.INK,figures)
+	var icon = MeshInstance3D.new()
+	var plane = PlaneMesh.new()
+	plane.size = Vector2(0.48,0.48)
+	icon.mesh = plane
+	var m = material(color)
+	m.albedo_color = Color.WHITE
+	m.albedo_texture = load("res://assets/b/icons/"+text+".svg")
+	icon.material_override = m
+	icon.position = p+Vector3(0,0.027,0)
+	figures.add_child(icon)
 
 func board_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:

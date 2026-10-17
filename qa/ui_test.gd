@@ -36,10 +36,11 @@ func run() -> void:
 	table.skip_intro = true
 	root.add_child(table)
 	for i in range(5): await process_frame
-	check(table.camera != null and table.figures.get_child_count() > 25,"3D table and rigid pegs instantiated")
+	check(table.camera != null and table.piece_nodes.size() == 10,"3D table and ten static miniature pieces instantiated")
 	check(find_button("Mover",table).disabled,"actions disabled before activation")
 	check(table.guide_title.text.begins_with("1. Escolha"),"first action explained on screen")
 	check(table.help_dialog.dialog_text.contains("3. ATAQUE") and table.help_dialog.dialog_text.contains("4. ENCERRE"),"in-game help explains movement, dice and turn sequence")
+	check(table.survivor_box.get_child(0).icon is AtlasTexture and table.actor_portrait.texture != null,"comic portrait cards and active portrait use production atlas")
 	var old_save = table.session.rules.save_payload()
 	old_save.state.content = "m0-lab-v1"
 	var old_path = "user://qa-old-map.save"
@@ -48,6 +49,8 @@ func run() -> void:
 	check(not table.session.load_game(old_path) and table.message.text.contains("mapa antigo") and table.session.rules.save_payload() == current_state and not preload("res://core/storage.gd").read(old_path).is_empty(),"loading old map explains rejection and preserves both mission and file")
 	table.survivor_box.get_child(0).pressed.emit()
 	check(table.session.view.active == 0,"survivor button activates piece")
+	check(table.actor_portrait.texture.region == table.survivor_box.get_child(0).icon.region,"selected portrait corresponds to the active survivor card")
+	check(root.get_visible_rect().encloses(table.survivor_box.get_global_rect()) and root.get_visible_rect().encloses(table.actions_box.get_global_rect()),"portrait cards and primary actions fit the current resolution")
 	check(not find_button("Mover",table).disabled,"legal turn unlocks actions")
 	find_button("Mover",table).pressed.emit()
 	check("v2" in table.legal_zones and not "b" in table.legal_zones and not "c" in table.legal_zones,"legal move highlights exclude closed doors and solid walls")
@@ -59,6 +62,10 @@ func run() -> void:
 	click_zone("v2",Vector3(1.4,0,0))
 	check(table.session.view.survivors[0].zone == "v2","mouse projection moves to selected zone")
 	check(table.session.view.survivors[0].actions == 2,"UI movement spends one action")
+	var moving_piece = table.piece_nodes.s0
+	check(moving_piece.position.distance_to(table.piece_positions.s0) > 0.1,"whole static piece starts a presentation tween after rules commit")
+	await create_timer(0.36).timeout
+	check(moving_piece.position.distance_to(table.piece_positions.s0) < 0.01,"piece settles at authoritative zone without another action cost")
 	click_zone("b",Vector3(0,0,-1.4))
 	check(table.selected == "b","upper and lower halves of storeroom select the same large room")
 	find_button("Mover",table).pressed.emit()
@@ -81,6 +88,7 @@ func run() -> void:
 	await process_frame
 	check(root.get_visible_rect().encloses(roll.get_global_rect()),"roll button fits visible window without scrolling")
 	if screenshot != "":
+		await create_timer(0.36).timeout
 		for i in range(4): await process_frame
 		await RenderingServer.frame_post_draw
 		check(root.get_texture().get_image().save_png(screenshot) == OK,"real GPU frame captured")

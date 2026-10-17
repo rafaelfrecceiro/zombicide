@@ -20,6 +20,7 @@
 
 | D-014 | 17/10/2026 | Formalizar e iniciar o recorte M0 | Usuário autorizou “pode seguir pra esse M0” após a proposta de primeiro recorte jogável; inclui seis sobreviventes, dois participantes, regras, dados, save e retomada |
 | D-015 | 17/10/2026 | Priorizar a apresentação de direções de arte agora | Usuário pediu “agora eu quero ja as direções de arte do jogo, para começar a ver direito”; autoriza produzir alternativas, não consolida uma delas |
+| D-016 | 17/10/2026 | Escolher B — Quadrinhos Urbanos | Usuário respondeu “a B” às três direções; miniaturas pintadas rígidas, tabuleiro ilustrado de contorno forte e interface de cartões claros. A/C preservadas como alternativas históricas; desenvolver amostra na engine antes de ampliar produção |
 
 ## Propostas de origem e situação atual
 
@@ -32,10 +33,10 @@
 | P-005 | Testar uma amostra de mesa 3D antes de produzir todo o conteúdo | Poses fixas aceitas em D-007; execução do experimento, tabuleiro plano e câmera continuam propostas para avaliar seleção, aglomeração e custo real | [Arte](direcao-arte.md) |
 | P-006 | Preparar missão e distribuir os seis sobreviventes antes de abrir a mesa | Salas privadas por convite aceitas em D-011; sequência de preparação, integração de convites e hospedagem continuam propostas | [Online/Godot](specs/NET-001.md) |
 | P-007 | A — Mesa de Colecionador | Recomendada: tile plano ilustrado e miniaturas de resina; esforço médio | [Arte e mockups](direcao-arte.md) |
-| P-008 | B — Quadrinhos Urbanos | Miniaturas pintadas, contornos e cartões gráficos; esforço médio | [Arte e mockups](direcao-arte.md) |
+| P-008 | B — Quadrinhos Urbanos | Escolhida em D-016; miniaturas pintadas, contornos e cartões gráficos; esforço médio | [Arte e mockups](direcao-arte.md) |
 | P-009 | C — Diorama Urbano | Cenário em volume, miniaturas pintadas e HUD tático; esforço alto | [Arte e mockups](direcao-arte.md) |
 
-Início de desenvolvimento autorizado em D-014. Não há decisão aceita sobre redesenho de arte, mudanças de regras, comercialização, expansões ou multiplayer assíncrono. Salas públicas ficam fora do escopo inicial por D-011.
+Início de desenvolvimento autorizado em D-014, direção visual B escolhida em D-016. Não há decisão aceita sobre mudanças de regras, comercialização, expansões ou multiplayer assíncrono. Salas públicas ficam fora do escopo inicial por D-011.
 
 ## Escolhas técnicas reversíveis desta rodada
 
@@ -48,4 +49,4 @@ Início de desenvolvimento autorizado em D-014. Não há decisão aceita sobre r
 
 O usuário disse: “essas artes e layout são totalmente prototipos, certo? pois está horrivel, mal conseguir jogar algo, pois não entendi nada”. Isso registra rejeição da apresentação inicial e dificuldade de compreensão. Não é aprovação de nova arte nem de mudanças nas regras.
 
-Resposta de implementação reversível: [UX-001](specs/UX-001.md), com guia de primeiros passos, contexto da ação e destinos legais. Nova apresentação ainda depende de reteste humano; direção final continua em aberto.
+Resposta de implementação reversível: [UX-001](specs/UX-001.md), com guia de primeiros passos, contexto da ação e destinos legais. Naquele momento a direção final continuava em aberto. Depois, B foi escolhida em D-016; a nova apresentação na engine ainda depende de reteste humano.
