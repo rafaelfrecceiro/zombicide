@@ -18,6 +18,7 @@ O runner cria uma pasta exclusiva em `qa/runs/`; preserva logs e resultados por 
 - `ui_test.gd`: cena real, botões, atlas/retrato correspondente, cartões/ações dentro da janela, projeção de clique inclusive nas áreas grandes, rejeição com motivo, save antigo preservado/rejeitado, prévia de ataque, dados, movimento da peça e câmera; captura quando há GPU.
 - `art_test.gd`: frames antes/durante/depois do tween, posição final, redução de movimento, câmera e grupo de 15 zumbis com resumo visual sem perda no estado. Requer GPU e `--output=<diretorio-absoluto>`.
 - `refinement_test.gd`: galeria isolada de quatro modelos, acessório equipado, prévia dual sem mutação/RNG, confirmação e rolagem manual, faces correspondentes, apresentação sem reaplicar combate, rejeição ilegal e lista completa de grupo denso; seis capturas reais. Requer GPU e `--output=<diretorio-absoluto>`.
+- `layout_test.gd`: entrada sem modal, controles/peça persistentes, foco, atalhos reais por Input, cancelamento sem custo, hover/câmera amostrados, redução de movimento, duas rolagens impedidas, grupo/painel/rodapé dentro da janela, histórico e 14 alvos roláveis com escolha do último. Requer GPU e `--output=<diretorio-absoluto>`.
 - `network_test.gd`: dois processos reais ENet, controle alheio rejeitado, movimento autorizado, desconexão/pausa e recriação da sessão do convidado recuperando credencial do disco.
 
 Resultados finais e limitações em [progress.md](../progress.md). Captura de referência em [artifacts/dice-screen.png](artifacts/dice-screen.png).
@@ -51,3 +52,11 @@ Godot_v4.7.2-stable_win64_console.exe --path ./src --script ../qa/refinement_tes
 ```
 
 Uma tentativa intermediária falhou por consultar `size` no nó raiz 3D da mesa no próprio teste; corrigida para o tamanho da janela. Metadados finais usam as dimensões da imagem capturada, conferidas também com Pillow, em vez do tamanho reportado pela textura. Não houve falha de regra nessa tentativa. Sem aprovação humana, exportação standalone, benchmark, internet ou Steam.
+
+## Interface UX-002 — execução vigente
+
+Runner `0f3a8a15`: **72/72 regras, 27/27 UI headless, 29/29 UI GPU, host/client aprovados**. Matriz `ux003-verified-1280x800` / `ux003-verified-1920x1080`: **31/31 layout, 17/17 refinamento, 10/10 arte** por tamanho. Imagens **1280×800 e 1920×1061**; sem Full HD exato. Logs finais sem ERROR/SCRIPT ERROR. [Capturas/resultados](artifacts/ux-002/) e [detalhes](../specs/UX-002.md). Sete dos checks de layout gravam frames; não são 31 partidas ou cenários únicos.
+
+Execução segue o comando de refinamento acima, trocando `../qa/refinement_test.gd` por `../qa/layout_test.gd`. Teste injeta teclado na fila de input do Godot; não controla o teclado global do desktop. Hover cosmético é dirigido no teste com mouse ignorado para isolar eventos externos; mede estados intermediário/final e ausência de mutação de regras. Leitura GPU pode avançar tempo de parede antes dos frames do tween; espera final é limitada a 30 frames adicionais. Câmera e movimento também são amostrados, sem alegação de FPS/latência percebida.
+
+Falhas encontradas/corrigidas nesta rodada: retrato herdava tinta dos ícones, resultados pós-combate cortavam grupo/rodapé, redução de movimento consultava metadado inexistente. Histórico/roster fora dos cortes conferidos após correções. O teste de arte agora aguarda o fim da transição de câmera antes do frame superior. Não há novo teste de internet, Steam ou exportação.

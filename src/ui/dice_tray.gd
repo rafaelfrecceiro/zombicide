@@ -33,7 +33,7 @@ func _draw() -> void:
 	draw_style_box(tray,Rect2(Vector2.ZERO,size))
 	var count_ = pending_count if pending_count > 0 else values.size()
 	var shown = mini(6,maxi(1,count_))
-	var edge = minf(54.0,(size.x-24.0-(shown-1)*8.0)/shown)
+	var edge = minf(minf(54.0,size.y-12.0),(size.x-24.0-(shown-1)*8.0)/shown)
 	for i in range(shown):
 		var bounce = absf(sin(elapsed*18+i*.7))*8*(1-elapsed/.5) if not reduce_motion and elapsed < .5 and pending_count == 0 else 0.0
 		var p = Vector2((size.x-shown*edge-(shown-1)*8)/2+i*(edge+8),(size.y-edge)/2-bounce)

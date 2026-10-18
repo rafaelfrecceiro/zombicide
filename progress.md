@@ -24,6 +24,7 @@
 | ZOM-011 | Três direções de arte comparáveis | concluida | PNG por direção, HUD/peças/cenário, paleta/tipo/feedback, custos, recomendação e prompts persistidos | Pedido explícito 17/10 | — |
 | ZOM-012 | Amostra B — Quadrinhos Urbanos na engine | em-andamento | Assets/UI e refinamento B-002 implementados; obter reteste humano de leitura e acabamento | D-016 / ZOM-011 | Codex / reteste do usuário |
 | ZOM-013 | Implementar refinamento representativo B-002 | concluida | Quatro modelos editáveis, galeria, tipografia licenciada, prévia, faces de dados e inspeção completa; QA técnico passa | D-017 / ZOM-012 parcial | — |
+| ZOM-014 | Interface fluida e hierarquia UX-002 | concluida | Layout B reorganizado, controles persistentes, transições/atalhos/redução de movimento; 31/31 checks por tamanho, sem cortes nos cenários testados | D-018 / ZOM-013 | — |
 
 ## Entregas e evidências
 
@@ -37,10 +38,13 @@
 | ZOM-011 | direcao-arte.md; arte/direcoes/{a-mesa-colecionador,b-quadrinhos-urbanos,c-diorama-urbano}/gameplay-v1.png e prompt.md; manifesto.json | Três PNGs 1672×941; B escolhida pelo usuário em D-016 | São conceitos estáticos; não confundir com captura da amostra |
 | ZOM-012 | arte/producao/b-001; nove .blend editáveis e GLBs; board/portraits/icons; QA em qa/artifacts/b-001 | Blender 5.2.2 concluiu 9 modelos; Godot importou; art_test.gd **10/10** em cada tamanho; frames antes/durante/depois, câmera e 15 zumbis inspecionados | Modelos procedurais simples abaixo do mockup; sem fichas oficiais, benchmark ou playtest humano |
 | ZOM-013 | arte/producao/b-002; quatro .blend/GLB novos; miniature_gallery.gd, dice_tray.gd, attack_info; fonte/OFL | Blender `REFINED_COMPLETE 4`, importação exit 0; **17/17 refinamento, 10/10 arte** em cada janela; seis capturas por tamanho inspecionadas; runner geral aprovado | Só Sobrevivente 01 refinado; estudo angular, sem aceitação humana; sem novas cartas/skills |
+| ZOM-014 | specs/UX-002.md; table_layout, ui_kit, table_button, table/board_hints/dice_tray; qa/layout_test.gd | **31/31 layout, 17/17 refinamento, 10/10 arte** por tamanho; runner 0f3a8a15 aprovado; snapshots e movimento amostrados | Qualidade percebida, acessibilidade completa e desempenho sem aprovação/medição; não é M0 integral |
 
 Último runner completo: `qa/runs/98855f80/`, comando `.\qa\run-tests.ps1 -Render`, exit code 0: regras 72/72, UI 27/27 headless e 29/29 GPU, host/client aprovados. Rodadas de arte: `b-final-1280` e `b-final-1920`, UI 29/29 e arte 10/10 cada; após ajuste exclusivo de plural, UI 29/29 repetida em `b-delivery-1920`. Tentativa `b-exact-1920` confirmou o mesmo limite da janela: **1920×1061 reais**, apesar do pedido 1920×1080; 1280×800 real confirmado. Capturas e inspeção são desses tamanhos reais, sem alegar Full HD exato validado. Scripts/QA versionados; logs/JSON em qa/runs ignorados. Capturas B atuais em [qa/artifacts/b-001](qa/artifacts/b-001/); capturas antigas preservadas como histórico.
 
 **Execução mais recente — B-002:** runner `qa/runs/bbc4dda2/`, `.\qa\run-tests.ps1 -Render`, exit 0, **72/72 regras, 27/27 UI headless, 29/29 UI GPU, host/client aprovados**. Refinamento em `b002-delivery-1280x800` e `b002-delivery-1920x1080`: **17/17**, arte **10/10** por tamanho. PNGs confirmados em **1280×800 e 1920×1061**, segunda janela limitada pelo desktop. Capturas e resumo versionados em [qa/artifacts/b-002](qa/artifacts/b-002/). A referência ao runner B-001 acima fica como histórico, substituída por esta execução atual.
+
+**Execução vigente — UX-002:** runner `qa/runs/0f3a8a15/`, mesmo comando, exit 0: **72/72 regras, 27/27 UI headless, 29/29 UI GPU, host/client aprovados**. Matriz `ux003-verified-1280x800` / `ux003-verified-1920x1080`: **31/31 layout, 17/17 refinamento, 10/10 arte por tamanho**, sem erros nos logs finais. PNGs **1280×800 / 1920×1061**. [Capturas/resultados](qa/artifacts/ux-002/) e [especificação](specs/UX-002.md). Contagens incluem gravação de frames; não somar execuções repetidas como cenários de gameplay distintos. Substitui B-002 como referência atual da interface.
 
 Render: OpenGL 3.3 / Compatibility / Intel Iris Xe. Nenhuma métrica de performance medida. A interface de rolagem foi movida para o topo depois de a captura mostrar que ficava fora da área visível.
 
@@ -71,7 +75,7 @@ Solo local permite testar os seis peões. Para duas pessoas: host cria mesa com 
 
 ## Próxima ação
 
-Retestar B-002 com o usuário: abrir **Miniaturas**, selecionar Peão 01, mover, conferir ataque e acionar LANÇAR; avaliar leitura e acabamento antes de ampliar elenco. ZOM-012/ZOM-009 continuam em andamento. Corrigir o que o contato humano revelar; depois ZOM-002/ZOM-003: fichas/cartas oficiais, exceções, revisão independente do mapa e partida completa. Conferir Full HD exato em configuração sem limite de janela. ZOM-007 trata Steam/teste externo posteriormente.
+Retestar **UX-002** com o usuário: escolher pelo cartão/1–6, mover/cancelar, conferir ataque, lançar e localizar o histórico; avaliar beleza, leitura e continuidade antes de ampliar a arte. ZOM-012/ZOM-009 permanecem em andamento para aceitação humana. Depois, ZOM-002/ZOM-003: fichas/cartas oficiais, exceções, revisão independente do mapa e partida completa. Conferir Full HD exato em configuração sem limite de janela. ZOM-007 trata Steam/teste externo posteriormente.
 
 ## Histórico — 17/10/2026
 
@@ -96,3 +100,5 @@ Usuário autorizou o próximo refinamento (“pode seguir”, D-017). B-002 subs
 A tentativa de abrir a nova sessão interativa ao entregar B-002 foi rejeitada pela revisão automática de aprovação: retorno `blocked by policy`, sem motivo específico. O comando inteiro não executou; manifesto e resultados foram gravados depois em ação separada. Não alegar sessão B-002 aberta para reteste humano. Launcher e `src/project.godot` disponíveis para execução local; as sessões GPU de QA foram executadas e encerradas normalmente.
 
 B-002 enviada a `origin/main`: implementação [0838372](https://github.com/rafaelfrecceiro/zombicide/commit/0838372) e preservação dos bytes da licença [80a7f1e](https://github.com/rafaelfrecceiro/zombicide/commit/80a7f1e). Push confirmado de b6142ab até 80a7f1e. `git diff --check` passa; whitespace original da licença externa preservado por atributo específico, sem modificar seu texto.
+
+Pedido de UI/layout fluido, intuitivo e bonito (D-018): UX-002 implementada na direção B. Cabeçalho e contadores curtos, guia contextual, ficha compacta, retratos em cores, ícones próprios, grupo persistente, histórico em janela e atalhos. Controles e miniaturas deixam de ser recriados por mudanças cosméticas; foco e deslocamentos são preservados. Tweens de hover/pressão/guia/ficha/câmera e redução de movimento integrados. QA encontrou corte do grupo/rodapé ao restaurar ações após rolagem, tingimento indevido de retrato e metadado ausente; corrigidos. Bandeja final compacta e listas extensas roláveis. Espera de tween no teste passou a respeitar frames processados após leitura GPU, com limite, pois timer de parede não comprovava fim da transição na janela maior. Resultados finais e limites acima. Nenhuma nova alegação de partida humana, benchmark ou paridade oficial.

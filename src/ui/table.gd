@@ -3,6 +3,7 @@ extends Node3D
 const Session = preload("res://net/session.gd")
 const Content = preload("res://core/content.gd")
 const Art = preload("res://ui/comic_art.gd")
+const Kit = preload("res://ui/ui_kit.gd")
 var session
 var board = Content.board()
 var defs = Content.weapons()
@@ -64,6 +65,27 @@ var gallery: AcceptDialog
 var zone_dialog: AcceptDialog
 var zone_text: RichTextLabel
 var attack_details: Dictionary = {}
+var mission_labels: Dictionary = {}
+var action_buttons: Dictionary = {}
+var roster_buttons: Dictionary = {}
+var guide_panel: PanelContainer
+var side_card: PanelContainer
+var action_meter: Label
+var empty_hint: Label
+var selection_hint: Label
+var zone_context: Label
+var hovered_zone = ""
+var cancel_button: Button
+var inventory_button: Button
+var history_button: Button
+var history_dialog: AcceptDialog
+var guide_signature = ""
+var guide_tween: Tween
+var card_tween: Tween
+var camera_tween: Tween
+var camera_ready = false
+var camera_goal: Dictionary = {}
+var piece_signature = ""
 
 func _ready() -> void:
 	build_ui()
@@ -71,7 +93,7 @@ func _ready() -> void:
 	session = Session.new()
 	session.name = "Session"
 	add_child(session)
-	session.changed.connect(refresh)
+	session.changed.connect(func(): message.text = ""; refresh())
 	session.rejected.connect(func(text): message.text = text)
 	refresh()
 	for arg in OS.get_cmdline_user_args():
@@ -80,7 +102,7 @@ func _ready() -> void:
 		if not capture_path.is_empty():
 			if "--capture-intro" in OS.get_cmdline_user_args(): help_dialog.popup_centered(Vector2i(640,440))
 			capture.call_deferred()
-		else: help_dialog.popup_centered(Vector2i(640,440))
+		else: roster_buttons[0].call_deferred("grab_focus")
 
 func label(text: String,size: int = 16) -> Label:
 	var l = Label.new()
@@ -89,7 +111,8 @@ func label(text: String,size: int = 16) -> Label:
 	return l
 
 func button(text: String,fn: Callable,parent: Node, disabled: bool = false) -> Button:
-	var b = Button.new()
+	var b = preload("res://ui/table_button.gd").new()
+	b.reduce_motion_provider = func(): return reduce_motion
 	b.text = text
 	b.custom_minimum_size.y = 34
 	b.disabled = disabled
@@ -112,159 +135,7 @@ func box_style(bg: Color,border: Color = Color("191c1d")) -> StyleBoxFlat:
 func build_ui() -> void:
 	var ui = CanvasLayer.new()
 	add_child(ui)
-	var root = PanelContainer.new()
-	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	root.add_theme_stylebox_override("panel",box_style(Color("1c2021")))
-	ui.add_child(root)
-	var theme = Theme.new()
-	theme.default_font_size = 16
-	theme.set_font("font","Button",Art.HEADER_FONT)
-	theme.set_font_size("font_size","Button",19)
-	theme.set_stylebox("normal","Button",box_style(Art.PAPER))
-	theme.set_stylebox("hover","Button",box_style(Color("fff2d7"),Color("42c8d4")))
-	theme.set_stylebox("pressed","Button",box_style(Color("dbcaab")))
-	theme.set_stylebox("disabled","Button",box_style(Color("494b46")))
-	theme.set_stylebox("focus","Button",box_style(Color(0,0,0,0),Color("42c8d4")))
-	theme.set_color("font_color","Button",Art.INK)
-	theme.set_color("font_hover_color","Button",Art.INK)
-	theme.set_color("font_pressed_color","Button",Art.INK)
-	theme.set_color("font_focus_color","Button",Art.INK)
-	theme.set_color("font_disabled_color","Button",Color("afae9e"))
-	theme.set_color("font_color","Label",Art.PAPER)
-	root.theme = theme
-	var layout = VBoxContainer.new()
-	layout.add_theme_constant_override("separation",9)
-	root.add_child(layout)
-	var header = HBoxContainer.new()
-	layout.add_child(header)
-	title = label("ZOMBICIDE / M0 · QUADRINHOS URBANOS",25)
-	title.add_theme_font_override("font",Art.HEADER_FONT)
-	title.add_theme_font_size_override("font_size",28)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(title)
-	button("Como jogar",func(): help_dialog.popup_centered(Vector2i(640,440)),header)
-	button("Miniaturas",func(): gallery.popup_centered_clamped(Vector2i(980,540),.92),header)
-	button("Partida / salvar",func(): session_dialog.popup_centered(Vector2i(520,510)),header)
-	var warning = label("Direção B escolhida · amostra visual inicial · fichas e baralhos ainda de laboratório",13)
-	warning.modulate = Color("d7b579")
-	layout.add_child(warning)
-	info = label("",16)
-	layout.add_child(info)
-	var main = HBoxContainer.new()
-	main.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	main.add_theme_constant_override("separation",14)
-	layout.add_child(main)
-	var left = VBoxContainer.new()
-	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	left.add_theme_constant_override("separation",6)
-	main.add_child(left)
-	var guide = PanelContainer.new()
-	guide.add_theme_stylebox_override("panel",box_style(Art.TEAL))
-	left.add_child(guide)
-	var instruction = VBoxContainer.new()
-	guide.add_child(instruction)
-	guide_title = label("",21)
-	guide_title.add_theme_font_override("font",Art.HEADER_FONT)
-	guide_title.add_theme_font_size_override("font_size",25)
-	instruction.add_child(guide_title)
-	guide_body = label("",15)
-	guide_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	instruction.add_child(guide_body)
-	var stack = Control.new()
-	stack.custom_minimum_size = Vector2(420,280)
-	stack.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	left.add_child(stack)
-	field = SubViewportContainer.new()
-	field.stretch = true
-	field.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	stack.add_child(field)
-	viewport = SubViewport.new()
-	viewport.size = Vector2i(920,560)
-	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-	field.add_child(viewport)
-	field.gui_input.connect(board_input)
-	field.resized.connect(func(): position_camera.call_deferred())
-	hints = preload("res://ui/board_hints.gd").new()
-	hints.table = self
-	hints.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hints.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	stack.add_child(hints)
-	var camera_row = HBoxContainer.new()
-	left.add_child(camera_row)
-	button("Vista de mesa",func(): elevation = 0.94; position_camera(),camera_row)
-	button("Vista superior",func(): elevation = 1.52; position_camera(),camera_row)
-	button("Girar ↶",func(): angle -= 0.25; position_camera(),camera_row)
-	button("Girar ↷",func(): angle += 0.25; position_camera(),camera_row)
-	button("Inspecionar zona",func(): inspect_zone(),camera_row)
-	left.add_child(label("Números: sobreviventes   |   Vermelhos: Z comum · R corredor · B bruto   |   Roda: zoom",13))
-	var card_panel = PanelContainer.new()
-	card_panel.add_theme_stylebox_override("panel",box_style(Art.PAPER))
-	card_panel.custom_minimum_size.x = 314
-	var card_theme = theme.duplicate()
-	card_theme.set_color("font_color","Label",Art.INK)
-	card_panel.theme = card_theme
-	main.add_child(card_panel)
-	panel = VBoxContainer.new()
-	panel.add_theme_constant_override("separation",7)
-	card_panel.add_child(panel)
-	var actor_header = HBoxContainer.new()
-	panel.add_child(actor_header)
-	actor_portrait = TextureRect.new()
-	actor_portrait.texture = Art.portrait(0)
-	actor_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	actor_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	actor_portrait.custom_minimum_size = Vector2(90,96)
-	actor_header.add_child(actor_portrait)
-	var actor_summary = VBoxContainer.new()
-	actor_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	actor_header.add_child(actor_summary)
-	actor_title = label("ESCOLHA UMA PEÇA",18)
-	actor_title.add_theme_font_override("font",Art.HEADER_FONT)
-	actor_title.add_theme_font_size_override("font_size",23)
-	actor_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	actor_summary.add_child(actor_title)
-	actor_stats = label("",15)
-	actor_stats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	actor_summary.add_child(actor_stats)
-	decision_section = VBoxContainer.new()
-	panel.add_child(decision_section)
-	dice_label = label("Dados: —",23)
-	decision_section.add_child(dice_label)
-	dice_tray = preload("res://ui/dice_tray.gd").new()
-	decision_section.add_child(dice_tray)
-	dice_summary = label("",15)
-	dice_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	decision_section.add_child(dice_summary)
-	decisions_box = VBoxContainer.new()
-	decision_section.add_child(decisions_box)
-	weapon_picker = OptionButton.new()
-	weapon_picker.item_selected.connect(func(index): weapon_slot = index; refresh())
-	panel.add_child(weapon_picker)
-	weapon_info = label("",14)
-	weapon_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	panel.add_child(weapon_info)
-	actions_box = GridContainer.new()
-	actions_box.columns = 2
-	actions_box.add_theme_constant_override("h_separation",7)
-	actions_box.add_theme_constant_override("v_separation",7)
-	panel.add_child(actions_box)
-	button("Inventário / trocar",func(): inventory_dialog.popup_centered(Vector2i(630,550)),panel)
-	status = label("",12)
-	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	panel.add_child(status)
-	layout.add_child(label("SEUS SOBREVIVENTES · clique em uma peça disponível para ativar",14))
-	survivor_box = HBoxContainer.new()
-	survivor_box.add_theme_constant_override("separation",7)
-	layout.add_child(survivor_box)
-	message = label("",15)
-	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	message.custom_minimum_size.y = 22
-	layout.add_child(message)
-	log_box = RichTextLabel.new()
-	log_box.custom_minimum_size.y = 34
-	log_box.scroll_following = true
-	log_box.add_theme_font_size_override("normal_font_size",13)
-	layout.add_child(log_box)
+	var theme = preload("res://ui/table_layout.gd").build(self,ui)
 	attack_dialog = ConfirmationDialog.new()
 	attack_dialog.title = "Confirmar ataque"
 	attack_dialog.ok_button_text = "Confirmar e preparar dados"
@@ -308,8 +179,8 @@ func build_ui() -> void:
 	button("Continuar save",func(): session.load_game(); session_dialog.hide(),settings)
 	button("Fazer ruído (gasta 1 ação)",func(): session.submit({"action":"noise"}); session_dialog.hide(),settings)
 	var motion = CheckButton.new()
-	motion.text = "Reduzir movimento das peças"
-	motion.toggled.connect(func(enabled): reduce_motion = enabled)
+	motion.text = "Reduzir movimento da interface e peças"
+	motion.toggled.connect(apply_reduce_motion)
 	settings.add_child(motion)
 	settings.add_child(label("Conexão privada de teste · 2 pessoas",17))
 	ip = LineEdit.new()
@@ -334,7 +205,7 @@ func build_ui() -> void:
 	paper_theme.set_stylebox("panel","AcceptDialog",box_style(Art.PAPER))
 	paper_theme.set_color("font_color","Label",Art.INK)
 	paper_theme.set_color("default_color","RichTextLabel",Art.INK)
-	for dialog in [attack_dialog,help_dialog,inventory_dialog,session_dialog,zone_dialog,gallery]: dialog.theme = paper_theme
+	for dialog in [attack_dialog,help_dialog,inventory_dialog,session_dialog,zone_dialog,gallery,history_dialog]: dialog.theme = paper_theme
 
 func build_world() -> void:
 	world = Node3D.new()
@@ -342,7 +213,7 @@ func build_world() -> void:
 	var environment = WorldEnvironment.new()
 	var env = Environment.new()
 	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color("202425")
+	env.background_color = Color("172125")
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color("d0dbdf")
 	env.ambient_light_energy = 0.45
@@ -449,6 +320,10 @@ func wall_span(from: Vector2,to: Vector2) -> void:
 
 func position_camera() -> void:
 	if camera == null: return
+	var old_position = camera.position
+	var old_rotation = camera.quaternion
+	var old_size = camera.size
+	if is_instance_valid(camera_tween): camera_tween.kill()
 	camera.position = Vector3(sin(angle)*cos(elevation),sin(elevation),cos(angle)*cos(elevation))*18
 	camera.look_at(Vector3.ZERO,Vector3.FORWARD if elevation > 1.5 else Vector3.UP)
 	camera.size = 1.0
@@ -461,6 +336,16 @@ func position_camera() -> void:
 				if first: projected = Rect2(point,Vector2.ZERO); first = false
 				else: projected = projected.expand(point)
 	camera.size = maxf(projected.size.x/maxf(1.0,viewport.size.x*0.96),projected.size.y/maxf(1.0,viewport.size.y*0.94))*(zoom/8.4)
+	camera_goal = {"position":camera.position,"quaternion":camera.quaternion,"size":camera.size}
+	if camera_ready and not reduce_motion:
+		camera.position = old_position
+		camera.quaternion = old_rotation
+		camera.size = old_size
+		camera_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		camera_tween.tween_property(camera,"position",camera_goal.position,.22)
+		camera_tween.tween_property(camera,"quaternion",camera_goal.quaternion,.22)
+		camera_tween.tween_property(camera,"size",camera_goal.size,.22)
+	camera_ready = true
 
 func clear(node: Node) -> void:
 	for child in node.get_children():
@@ -470,58 +355,64 @@ func clear(node: Node) -> void:
 func refresh() -> void:
 	if session == null or session.view.is_empty(): return
 	var s = session.view
-	clear(survivor_box)
-	clear(actions_box)
+	ensure_controls()
 	clear(inventory_box)
 	clear(decisions_box)
-	for identity in piece_nodes:
-		if is_instance_valid(piece_nodes[identity]): piece_positions[identity] = piece_nodes[identity].position
-	clear(figures)
-	miniatures.clear()
-	piece_nodes.clear()
 	var active = s.survivors[int(s.active)] if s.active >= 0 else {}
 	var permitted = not active.is_empty() and active.owner == session.role and not s.paused and s.outcome == "" and s.pending.is_empty()
 	var phase = "Partida pausada" if s.paused else ("Vitória" if s.outcome == "victory" else ("Derrota" if s.outcome == "defeat" else "Sua vez" if s.players[int(s.active_player)] == session.role else "Vez do amigo"))
-	info.text = "Rodada %d · %s   |   Objetivos %d/2 · Caixas %d/2   →   Voltar à SAÍDA com todos" % [s.round,phase,2-s.objectives.size(),2-s.crates.size()]
-	status.text = "Você controla os seis sobreviventes neste teste solo." if session.mode == "offline" else "Sala privada · você controla as peças de "+session.role
+	info.text = "RODADA %02d   /   %s" % [s.round,phase.to_upper()]
+	mission_labels.objective.text = "OBJETIVOS   %d / 2" % (2-s.objectives.size())
+	mission_labels.crate.text = "CAIXAS   %d / 2" % (2-s.crates.size())
+	var escaped = s.survivors.filter(func(v): return v.escaped).size()
+	mission_labels.exit.text = "SAÍDA   %d / 6" % escaped
+	status.text = "Solo · seis sobreviventes" if session.mode == "offline" else "Sala privada · "+session.role
 	for v in s.survivors:
+		var b = roster_buttons[int(v.id)]
 		var action_count = str(v.actions)+(" ação" if v.actions == 1 else " ações")
-		var text = v.name+"\n"+action_count
-		if v.id == s.active: text = "▶ "+v.name+"\nATIVO · "+action_count
-		elif v.escaped: text = v.name+"\nESCAPOU"
-		elif v.id in s.done: text = v.name+"\nCONCLUÍDO"
+		var state = "DISPONÍVEL"
+		if v.id == s.active: state = "ATIVO"
+		elif v.escaped: state = "ESCAPOU"
+		elif v.id in s.done: state = "CONCLUÍDO"
+		elif v.owner != session.role: state = "DO AMIGO"
+		elif s.active >= 0 and s.active != v.id: state = "EM ESPERA"
 		var locked = v.escaped or v.id in s.done or v.owner != session.role or s.paused or (s.active >= 0 and s.active != v.id)
-		var b = button(text,func():
-			equip_from = -1
-			mode = "inspect"
-			if session.view.active == -1: session.submit({"action":"activate","actor":v.id})
-			else: message.text = "Esta é a peça ativa. Escolha uma ação à direita."
-			,survivor_box,locked)
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.custom_minimum_size.y = 84
-		b.icon = Art.portrait(int(v.id))
-		b.expand_icon = true
-		b.add_theme_constant_override("icon_max_width",64)
-		b.add_theme_color_override("icon_disabled_color",Color(0.60,0.60,0.60,1))
-		b.add_theme_font_size_override("font_size",17)
-		b.tooltip_text = "Ativar "+v.name if not locked else "Encerre a ativação atual antes de escolher outra peça."
-		if v.id == s.active: b.add_theme_stylebox_override("normal",box_style(Art.PAPER,Color("42c8d4")))
+		b.text = v.name+"  ·  "+action_count+"\n"+state
+		b.disabled = locked
+		b.mouse_default_cursor_shape = Control.CURSOR_ARROW if locked else Control.CURSOR_POINTING_HAND
+		b.tooltip_text = ("Encerre a ativação atual antes de escolher outra peça." if s.active >= 0 and s.active != v.id else "Este sobrevivente já concluiu a ativação." if v.id in s.done else "Esta peça pertence ao amigo." if v.owner != session.role else "Partida pausada." if s.paused else "Ativar "+v.name+" · tecla "+str(int(v.id)+1))
+		var selected_card = v.id == s.active
+		var normal = Kit.surface(Color("d6f0e9") if selected_card else Art.PAPER,Color("52c7cc") if selected_card else colors[int(v.id)],10)
+		normal.border_width_top = 4
+		b.add_theme_stylebox_override("normal",normal)
+		var locked_style = Kit.surface(Color("b2b4a7"),colors[int(v.id)].darkened(.25),10)
+		locked_style.border_width_top = 4
+		b.add_theme_stylebox_override("disabled",locked_style)
+		b.add_theme_color_override("font_disabled_color",Color("475252"))
+		b.add_theme_color_override("icon_disabled_color",Color(.8,.8,.8,1))
 	if s.active != last_actor:
 		weapon_slot = 0
 		equip_from = -1
 		mode = "inspect"
 		last_actor = s.active
+		if is_instance_valid(card_tween): card_tween.kill()
+		if not reduce_motion:
+			side_card.modulate = Color(.83,.91,.91,1)
+			card_tween = create_tween()
+			card_tween.tween_property(side_card,"modulate",Color.WHITE,.16)
+		else: side_card.modulate = Color.WHITE
 	weapon_picker.clear()
 	if active.is_empty():
 		actor_portrait.modulate = Color(0.6,0.6,0.6,1)
-		actor_title.text = "Nenhuma peça ativa"
-		actor_stats.text = "Clique em um cartão abaixo do tabuleiro."
+		actor_title.text = "SEU PRÓXIMO\nSOBREVIVENTE"
+		actor_stats.text = "Escolha no grupo abaixo."
 		weapon_info.text = ""
 	else:
 		actor_portrait.texture = Art.portrait(int(active.id))
 		actor_portrait.modulate = Color.WHITE
 		actor_title.text = active.name+" · ATIVO"
-		actor_stats.text = "%d %s\nVIDA %d/3\nADRENALINA %d" % [active.actions,"AÇÃO" if active.actions == 1 else "AÇÕES",3-active.wounds,active.ap]
+		actor_stats.text = "VIDA   %d / 3\nADRENALINA   %d" % [3-active.wounds,active.ap]
+		action_meter.text = "● " .repeat(int(active.actions))+"  %d %s" % [active.actions,"AÇÃO" if active.actions == 1 else "AÇÕES"]
 		if not defs.get(active.inventory[weapon_slot],{}).has("range"):
 			for i in range(2):
 				if defs.get(active.inventory[i],{}).has("range"): weapon_slot = i; break
@@ -531,37 +422,37 @@ func refresh() -> void:
 		weapon_picker.select(weapon_slot)
 		var weapon = defs.get(active.inventory[weapon_slot],{})
 		weapon_info.text = "Base: %d dado(s) · acerta %d+ · dano %d" % [weapon.get("dice",0),weapon.get("accuracy",0),weapon.get("damage",0)] if weapon.has("range") else "Equipe uma arma em uma das mãos para atacar."
+	action_meter.visible = not active.is_empty()
+	empty_hint.visible = active.is_empty()
+	inventory_button.visible = not active.is_empty()
+	selection_hint.text = "M · mover    A · atacar    I · itens" if not active.is_empty() else "As regras são aplicadas pelo jogo. Você escolhe as ações e inicia os dados."
+	selection_hint.tooltip_text = "Passe o mouse numa ação para ver sua condição."
 	var pending = not s.pending.is_empty()
+	if pending: selection_hint.text = "Espaço · lançar os dados" if s.pending.kind == "roll" else "Escolha uma opção para continuar."
 	weapon_picker.visible = not active.is_empty() and not pending
 	weapon_info.visible = not active.is_empty() and not pending
 	weapon_picker.disabled = not permitted
-	actions_box.visible = not pending
+	actions_box.visible = not pending and not active.is_empty()
 	var preview = preload("res://core/rules.gd").new()
 	preview.s = s
 	legal_zones = []
 	if permitted and mode != "inspect": legal_zones = destinations(preview,active,mode)
-	for entry in [["Mover","move"],["Atacar","attack"],["Abrir porta","open"],["Buscar","search"]]:
-		var action = str(entry[1])
-		var reason = action_reason(preview,active,action,permitted)
-		var b = button(entry[0],func():
-			if action == "search": session.submit({"action":"search"})
-			else: set_mode(action),actions_box,not reason.is_empty())
-		b.custom_minimum_size = Vector2(142,40)
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.tooltip_text = reason if not reason.is_empty() else {"move":"Escolha uma zona verde no tabuleiro.","attack":"Escolha uma zona em alcance; depois confirme e lance os dados.","open":"Selecione uma porta destacada.","search":"Compre equipamento nesta sala; uma busca por ativação."}[action]
-		if mode == action:
-			b.add_theme_stylebox_override("normal",box_style(Art.RED))
-			b.add_theme_color_override("font_color",Art.PAPER)
-	if not active.is_empty():
-		for entry in [["Coletar objetivo","objective",s.objectives],["Pegar arma especial","crate",s.crates]]:
-			var action = str(entry[1])
-			if active.zone in entry[2]: button(entry[0],func(): session.submit({"action":action}),actions_box,not permitted or active.actions <= 0)
-		if active.zone == board.exit and s.objectives.is_empty() and s.crates.is_empty(): button("Fugir pela saída",func(): session.submit({"action":"escape"}),actions_box,not permitted)
-	button("Encerrar",func(): mode = "inspect"; session.submit({"action":"end"}),actions_box,not permitted)
+	for action in action_buttons:
+		var b = action_buttons[action]
+		var reason = action_reason(preview,active,action,permitted) if action in ["move","attack","open","search"] else "Aguarde sua vez ou a decisão pendente." if not permitted else ""
+		b.visible = true
+		if action == "objective": b.visible = not active.is_empty() and active.zone in s.objectives
+		if action == "crate": b.visible = not active.is_empty() and active.zone in s.crates
+		if action == "escape": b.visible = not active.is_empty() and active.zone == board.exit and s.objectives.is_empty() and s.crates.is_empty()
+		b.disabled = not reason.is_empty() or (action != "end" and not active.is_empty() and active.actions <= 0)
+		b.tooltip_text = reason if not reason.is_empty() else {"move":"M · Escolha uma zona verde. Custo: 1 ação + zumbis na origem.","attack":"A · Escolha uma zona em alcance. Confira a prévia antes de gastar a ação.","open":"Selecione uma porta destacada; requer ferramenta equipada.","search":"B · Busque equipamento nesta sala. Uma busca por ativação.","end":"Conclui esta ativação e libera o próximo sobrevivente.","objective":"Custa 1 ação; recebe 5 de adrenalina.","crate":"Custa 1 ação; recolhe uma arma especial.","escape":"Saia ao fim da ativação, com a zona livre."}[action]
+		Kit.role(b,"primary" if mode == action else "paper")
 	render_inventory(active,permitted)
 	decision_section.visible = pending or not s.dice.is_empty()
 	dice_label.text = "Lance os dados" if pending and s.pending.kind == "roll" else "Dados: "+("—" if s.dice.is_empty() else "  ".join(s.dice.map(func(v): return str(v))))
 	dice_tray.display(s.dice,int(s.pending.get("dice",0)) if pending and s.pending.kind == "roll" else 0,reduce_motion)
+	dice_tray.custom_minimum_size.y = 90 if pending and s.pending.kind == "roll" else 54
+	dice_label.add_theme_font_size_override("font_size",24 if pending and s.pending.kind == "roll" else 18)
 	dice_tray.visible = not s.dice.is_empty() or (pending and s.pending.kind == "roll")
 	dice_summary.text = "Pronto para lançar. O jogo resolve os resultados." if pending and s.pending.kind == "roll" else last_roll_summary(s)
 	dice_summary.visible = dice_tray.visible
@@ -574,10 +465,20 @@ func refresh() -> void:
 		if p.kind == "roll":
 			var roll_button = button("LANÇAR %d DADO(S)" % p.dice,func(): session.submit({"action":"roll"}),decisions_box,p.owner != session.role or s.paused)
 			roll_button.custom_minimum_size.y = 54
-			roll_button.add_theme_stylebox_override("normal",box_style(Art.RED))
-			roll_button.add_theme_color_override("font_color",Art.PAPER)
-			roll_button.add_theme_color_override("font_focus_color",Art.PAPER)
+			roll_button.icon = Kit.icon("dice")
+			roll_button.tooltip_text = "Espaço · Lançar uma única vez e aplicar as regras."
+			Kit.role(roll_button,"primary")
 		else:
+			var choices_parent: Node = decisions_box
+			if s.get("choices",[]).size() > 4:
+				var scroll = ScrollContainer.new()
+				scroll.custom_minimum_size.y = 180
+				scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+				decisions_box.add_child(scroll)
+				var choices = VBoxContainer.new()
+				choices.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				scroll.add_child(choices)
+				choices_parent = choices
 			for value in s.get("choices",[]):
 				var choice = str(value)
 				var text = choice
@@ -586,20 +487,35 @@ func refresh() -> void:
 				elif p.kind in ["building","split"]: text = zone_name(choice)
 				elif p.kind == "hit": text = "Zumbi #"+choice
 				elif p.kind == "trade": text = "Aceitar" if choice == "yes" else "Recusar"
-				button(text,func(): session.submit({"action":"choose","choice":choice}),decisions_box,p.owner != session.role or s.paused)
+				button(text,func(): session.submit({"action":"choose","choice":choice}),choices_parent,p.owner != session.role or s.paused)
 	update_guide(s,active)
+	update_guide_motion()
+	update_zone_context()
 	if zone_dialog.visible: update_inspector()
 	var messages = s.log.filter(func(line): return not str(line).begins_with("M0 em construção"))
-	log_box.text = "\n".join(messages)
+	log_box.text = "\n\n".join(messages)
+	if message.text.is_empty() and not messages.is_empty(): message.text = str(messages[-1])
+	history_button.tooltip_text = str(messages[-1]) if not messages.is_empty() else "Nenhum evento na missão ainda."
+	update_pieces(s)
+	for id in floors:
+		var m = floors[id].mesh.material_override
+		m.albedo_color = floors[id].base.lightened(0.13) if id == selected else floors[id].base
+
+func update_pieces(s: Dictionary) -> void:
+	var signature = JSON.stringify([s.active,s.survivors.map(func(v): return [v.id,v.zone,v.inventory,v.escaped]),s.zombies,s.objectives,s.crates,s.doors,weapon_slot])
+	if piece_signature == signature: return
+	piece_signature = signature
+	for identity in piece_nodes:
+		if is_instance_valid(piece_nodes[identity]): piece_positions[identity] = piece_nodes[identity].position
+	clear(figures)
+	miniatures.clear()
+	piece_nodes.clear()
 	var occupied = {}
 	for v in s.survivors:
 		if not v.escaped: draw_peg(v.zone,colors[int(v.id)],str(int(v.id)+1),occupied,v.id == s.active,0.8,"s"+str(v.id))
 	for z in s.zombies:
 		var color = {"walker":Color("bd6060"),"runner":Color("e78455"),"fatty":Color("9d4960"),"abomination":Color("713e58")}.get(z.type,Color.RED)
 		draw_peg(z.zone,color,{"walker":"Z","runner":"R","fatty":"B","abomination":"A"}[z.type],occupied,false,0.95 if z.type == "fatty" else 0.72,"z"+str(z.id))
-	for id in floors:
-		var m = floors[id].mesh.material_override
-		m.albedo_color = floors[id].base.lightened(0.13) if id == selected else floors[id].base
 	for id in s.objectives: marker(id,Art.RED,"objective",Vector3(-0.55,0.18,-0.37))
 	for id in s.crates: marker(id,Color("d2a040"),"crate",Vector3(-0.55,0.18,-0.37))
 	marker(board.start,Art.TEAL,"exit",Vector3(1.30,0.18,-0.37))
@@ -718,10 +634,24 @@ func render_inventory(active: Dictionary,permitted: bool) -> void:
 	button("Descartar slot %d" % (from_slot+1),func(): session.submit({"action":"discard","actor":session.view.active,"slot":from_slot}),inventory_box,active.owner != session.role)
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE and mode != "inspect":
-		mode = "inspect"
-		message.text = "Seleção cancelada. Nenhuma ação foi gasta."
-		refresh()
+	if not event is InputEventKey or not event.pressed or event.echo: return
+	for dialog in [help_dialog,inventory_dialog,session_dialog,attack_dialog,gallery,zone_dialog,history_dialog]:
+		if dialog.visible: return
+	if get_viewport().gui_get_focus_owner() is LineEdit: return
+	if event.keycode == KEY_ESCAPE and mode != "inspect": cancel_selection()
+	elif event.keycode >= KEY_1 and event.keycode <= KEY_6:
+		var b = roster_buttons.get(int(event.keycode-KEY_1))
+		if b != null and not b.disabled: b.pressed.emit()
+	elif event.keycode == KEY_I:
+		if inventory_button.is_visible_in_tree(): inventory_button.pressed.emit()
+	elif event.keycode == KEY_SPACE and session.view.pending.get("kind","") == "roll" and session.view.pending.owner == session.role:
+		session.submit({"action":"roll"})
+	elif event.keycode in [KEY_M,KEY_A,KEY_B]:
+		var action = {KEY_M:"move",KEY_A:"attack",KEY_B:"search"}[event.keycode]
+		var b = action_buttons[action]
+		if b.is_visible_in_tree() and not b.disabled: b.pressed.emit()
+	else: return
+	get_viewport().set_input_as_handled()
 
 func max_ap(s: Dictionary) -> int:
 	var result = 0
@@ -745,7 +675,9 @@ func draw_peg(zone: String,color: Color,text: String,occupied: Dictionary,active
 	piece_nodes[identity] = piece
 	if piece_positions.has(identity) and not reduce_motion and piece_positions[identity].distance_to(p) > 0.01:
 		piece.position = piece_positions[identity]+Vector3(0,0.12,0)
-		piece.create_tween().tween_property(piece,"position",p,0.30).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		var motion_tween = piece.create_tween()
+		piece.set_meta("motion_tween",motion_tween)
+		motion_tween.tween_property(piece,"position",p,0.30).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	piece_positions[identity] = p
 	cylinder(Vector3(0,0.035,0),0.25,0.07,Art.INK,piece)
 	cylinder(Vector3(0,0.08,0),0.235,0.045,Color("42d9e4") if active else color,piece)
@@ -784,6 +716,14 @@ func marker(zone: String,color: Color,text: String,offset: Vector3) -> void:
 	figures.add_child(icon)
 
 func board_input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		var ray = camera.project_ray_origin(event.position)
+		var hit = Plane(Vector3.UP,.12).intersects_ray(ray,camera.project_ray_normal(event.position))
+		hovered_zone = ""
+		if hit != null:
+			for id in board.zones:
+				if Content.bounds(board.zones[id]).has_point(Vector2((hit.x+6)/2,(hit.z+3)/2)): hovered_zone = id; break
+		update_zone_context()
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			zoom = maxf(8,zoom-1)
@@ -835,7 +775,9 @@ func confirm_attack(zone: String) -> void:
 func last_roll_summary(s: Dictionary) -> String:
 	for i in range(s.log.size()-1,-1,-1):
 		var entry = str(s.log[i])
-		if entry.begins_with("Dados:") and entry.contains("→"): return entry.get_slice("→",1).strip_edges()+" · o jogo conduz a resolução."
+		if entry.begins_with("Dados:") and entry.contains("→"):
+			var count_ = entry.get_slice("→",1).strip_edges().get_slice(" ",0).to_int()
+			return "%d %s · detalhes no Histórico" % [count_,"acerto" if count_ == 1 else "acertos"]
 	return "Resultado da última rolagem."
 
 func inspect_zone() -> void:
@@ -863,3 +805,77 @@ func capture() -> void:
 	var err = get_viewport().get_texture().get_image().save_png(capture_path)
 	print("CAPTURE ",err," ",capture_path)
 	get_tree().quit(0 if err == OK else 1)
+
+func ensure_controls() -> void:
+	if not roster_buttons.is_empty(): return
+	for i in range(6):
+		var id = i
+		var b = button("",func(): activate_actor(id),survivor_box)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.custom_minimum_size = Vector2(0,88)
+		b.icon = Art.portrait(i)
+		b.expand_icon = true
+		for state in ["icon_normal_color","icon_hover_color","icon_pressed_color","icon_focus_color"]: b.add_theme_color_override(state,Color.WHITE)
+		b.add_theme_constant_override("icon_max_width",58)
+		b.add_theme_font_size_override("font_size",18)
+		roster_buttons[i] = b
+	for entry in [["Mover","move"],["Atacar","attack"],["Abrir porta","open"],["Buscar","search"],["Coletar objetivo","objective"],["Pegar arma especial","crate"],["Fugir pela saída","escape"],["Encerrar","end"]]:
+		var action = str(entry[1])
+		var b = button(entry[0],func():
+			if action in ["move","attack","open"]: set_mode(action)
+			else:
+				mode = "inspect"
+				session.submit({"action":action}),actions_box)
+		b.custom_minimum_size = Vector2(138,42)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.icon = Kit.icon(action)
+		action_buttons[action] = b
+
+func activate_actor(id: int) -> void:
+	if roster_buttons[id].disabled: return
+	equip_from = -1
+	mode = "inspect"
+	if session.view.active == -1: session.submit({"action":"activate","actor":id})
+	else: message.text = "Esta é a peça ativa. Escolha uma ação à direita."
+
+func cancel_selection() -> void:
+	mode = "inspect"
+	message.text = "Seleção cancelada. Nenhuma ação foi gasta."
+	refresh()
+
+func update_guide_motion() -> void:
+	cancel_button.visible = mode != "inspect" and session.view.pending.is_empty()
+	var signature = guide_title.text+guide_body.text
+	if guide_signature == signature: return
+	guide_signature = signature
+	if is_instance_valid(guide_tween): guide_tween.kill()
+	if reduce_motion: guide_panel.modulate = Color.WHITE; return
+	guide_panel.modulate = Color(.72,.87,.88,1)
+	guide_tween = create_tween()
+	guide_tween.tween_property(guide_panel,"modulate",Color.WHITE,.14)
+
+func update_zone_context() -> void:
+	if session == null or session.view.is_empty(): return
+	var id = hovered_zone if not hovered_zone.is_empty() else selected
+	var s = session.view
+	var count_ = s.zombies.filter(func(z): return z.zone == id).size()
+	zone_context.text = zone_name(id)+" · %d zumbis" % count_
+	zone_context.tooltip_text = "Zona selecionada · use Inspecionar zona para ver todos os atores. Roda do mouse: zoom."
+
+func apply_reduce_motion(enabled: bool) -> void:
+	reduce_motion = enabled
+	if not enabled: return
+	if is_instance_valid(guide_tween): guide_tween.kill()
+	if is_instance_valid(card_tween): card_tween.kill()
+	guide_panel.modulate = Color.WHITE
+	side_card.modulate = Color.WHITE
+	if is_instance_valid(camera_tween): camera_tween.kill()
+	for property in camera_goal: camera.set(property,camera_goal[property])
+	for id in piece_nodes:
+		var piece = piece_nodes[id]
+		var tween = piece.get_meta("motion_tween") if piece.has_meta("motion_tween") else null
+		if is_instance_valid(tween): tween.kill()
+		piece.position = piece_positions[id]
+	for b in roster_buttons.values()+action_buttons.values(): b.reset_motion()
+	dice_tray.reduce_motion = true
+	dice_tray.queue_redraw()

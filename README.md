@@ -27,8 +27,10 @@ O primeiro contato humano apontou dificuldade de entender como jogar. A revisão
 
 A revisão [MAP-001](specs/MAP-001.md) corrige zonas, portas, distâncias e visão a partir do manual. Missões novas usam 12 zonas; saves antigos de 18 células são incompatíveis e seu carregamento preserva o arquivo e a partida atual.
 
-![Amostra B-002 no Godot e interface de dados](qa/artifacts/b-002/dice-result-1920.png)
+![Interface UX-002 no Godot](qa/artifacts/ux-002/combat-result-1920.png)
 
 **Direção escolhida: B — Quadrinhos Urbanos (D-016).** [Primeira amostra na engine](arte/producao/b-001/README.md): tabuleiro ilustrado, seis retratos, nove modelos estáticos Blender/GLB, UI de cartões claros e movimento da peça inteira. Acabamento de miniaturas e paridade de conteúdo ainda pendentes. [Alternativas preservadas](arte/direcoes/README.md) · [Bíblia visual](direcao-arte.md). A imagem conceitual não é uma promessa de qualidade já alcançada no runtime.
 
 [Refinamento B-002](arte/producao/b-002/README.md): quatro modelos substituídos (Sobrevivente 01 e três zumbis), galeria giratória **Miniaturas**, fonte condensada licenciada, prévia de ataque validada pelo motor, faces visuais dos dados e **Inspecionar zona** para todos os atores. Teste dedicado **17/17** e arte **10/10** em 1280×800 e 1920×1061 reais. Os outros cinco sobreviventes ainda usam B-001; aprovação humana do acabamento segue pendente.
+
+[Interface vigente UX-002](specs/UX-002.md): mesa sem ajuda modal obrigatória, objetivos separados, ficha compacta, ícones, cartões/ações persistentes, histórico recolhido e bandeja compacta após o lançamento. Hover, pressão, guia e câmera têm transições com redução de movimento. Atalhos 1–6/M/A/B/I/Espaço/Esc; listas extensas têm rolagem própria. **31/31 verificações adicionais de layout/interação** por tamanho; conforto, beleza e compreensão ainda aguardam avaliação humana. Para executar o projeto no editor, use **F5**.

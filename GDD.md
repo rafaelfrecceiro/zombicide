@@ -31,6 +31,8 @@ Mapa lógico, conteúdo e regras precisam de fonte por dado. Versão inicial dev
 
 Candidato de engenharia: mouse seleciona zona e sobrevivente, painéis de ações e inventário, interface de dados quando necessário, log, câmera inclinada com zoom e vista superior. Teclado serve de atalho. Idioma inicial pt-BR como detalhe reversível do protótipo.
 
+Implementação de interface vigente em [UX-002](specs/UX-002.md), D-018: controles persistentes, guia sem modal obrigatório, cabeçalho/contadores, painel contextual compacto, grupo de seis, dados e histórico. Atalhos e transições com redução de movimento; aceitação humana ainda aberta.
+
 ## Arte e áudio
 
 [Arte](direcao-arte.md): B — Quadrinhos Urbanos escolhida em D-016. Amostra B-001 usa tabuleiro ilustrado plano, miniaturas pintadas rígidas, retratos e UI gráfica. Modelos iniciais ainda em refinamento; referência física preservada para pesquisa, sem imagens do manual no runtime. Áudio final ainda não definido.

@@ -33,7 +33,13 @@ func _draw() -> void:
 			var outline = points.duplicate()
 			outline.append(points[0])
 			draw_polyline(outline,color,3,true)
-			text_at("MOVER" if table.mode == "move" else ("PORTA" if table.mode == "open" else "ALCANCE"),center+Vector2(0,-8),15,color)
+			var cost = 1
+			if s.active >= 0: cost += s.zombies.filter(func(z): return z.zone == s.survivors[int(s.active)].zone).size()
+			text_at("MOVER · %d AÇÃO" % cost if table.mode == "move" else ("PORTA" if table.mode == "open" else "ALCANCE"),center+Vector2(0,-8),15,color)
+		if id == table.hovered_zone:
+			var hover_outline = points.duplicate()
+			hover_outline.append(points[0])
+			draw_polyline(hover_outline,Color(1,.97,.83,.7),2,true)
 		if table.mode == "inspect" and s.active >= 0 and s.survivors[int(s.active)].zone == id:
 			var outline = points.duplicate()
 			outline.append(points[0])

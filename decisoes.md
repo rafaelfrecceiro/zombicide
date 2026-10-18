@@ -22,6 +22,7 @@
 | D-015 | 17/10/2026 | Priorizar a apresentação de direções de arte agora | Usuário pediu “agora eu quero ja as direções de arte do jogo, para começar a ver direito”; autoriza produzir alternativas, não consolida uma delas |
 | D-016 | 17/10/2026 | Escolher B — Quadrinhos Urbanos | Usuário respondeu “a B” às três direções; miniaturas pintadas rígidas, tabuleiro ilustrado de contorno forte e interface de cartões claros. A/C preservadas como alternativas históricas; desenvolver amostra na engine antes de ampliar produção |
 | D-017 | 17/10/2026 | Executar o refinamento representativo da direção B | Usuário respondeu “pode seguir” à proposta de refinar um sobrevivente, Walker/Runner/Fatty e combate/dados antes de ampliar o elenco. Autoriza produção da amostra, sem aprovar automaticamente seu acabamento |
+| D-018 | 17/10/2026 | Priorizar layout e UI fluidos, intuitivos e bonitos | Pedido explícito do usuário; autoriza refinamento da B em UX-002, hierarquia, navegação e transições. Não aprova automaticamente o resultado nem muda regras/conteúdo |
 
 ## Propostas de origem e situação atual
 

@@ -38,6 +38,7 @@ func run() -> void:
 	table.angle = 0.30
 	table.elevation = 1.52
 	table.position_camera()
+	await create_timer(.26).timeout
 	await frame("camera")
 	table.reduce_motion = true
 	table.session.submit({"action":"move","zone":"w0"})
