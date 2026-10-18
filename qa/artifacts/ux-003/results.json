@@ -1,0 +1,93 @@
+{
+  "runner": "a56d0205",
+  "renderer": "Compatibility / OpenGL 3.3 / Intel Iris Xe",
+  "content": "m0-lab-v3-skills",
+  "results": {
+    "runner/rules": {
+      "checks": 72,
+      "failures": [],
+      "passed": 72
+    },
+    "runner/skills": {
+      "checks": 27,
+      "failures": [],
+      "passed": 27
+    },
+    "runner/ui": {
+      "checks": 27,
+      "failures": [],
+      "passed": 27
+    },
+    "runner/gpu": {
+      "checks": 29,
+      "failures": [],
+      "passed": 29
+    },
+    "runner/host": {
+      "message": "Host observed pause, credential rejoin and preserved ownership",
+      "ok": true,
+      "side": "host",
+      "stage": 3
+    },
+    "runner/client": {
+      "message": "Client command rejected, legal move and credential reconnect preserved",
+      "ok": true,
+      "side": "client",
+      "stage": 6
+    },
+    "menu/1280x800": {
+      "checks": 19,
+      "failures": [],
+      "passed": 19,
+      "png_dimensions": "(1280, 800)"
+    },
+    "layout/1280x800": {
+      "checks": 31,
+      "failures": [],
+      "motion": "hover/camera intermediate samples use paused Tween.custom_step; final transitions resume normally; not a performance benchmark or human playtest",
+      "passed": 31,
+      "png_dimensions": "(1280, 800)"
+    },
+    "refinement/1280x800": {
+      "checks": 17,
+      "failures": [],
+      "passed": 17,
+      "png_dimensions": "(1280, 800)",
+      "window": "(1280, 800)"
+    },
+    "art/1280x800": {
+      "checks": 10,
+      "failures": [],
+      "motion": "positions and GPU frames sampled; not a human playtest or FPS benchmark",
+      "passed": 10,
+      "resolution": "(1280, 800)"
+    },
+    "menu/1920x1080": {
+      "checks": 19,
+      "failures": [],
+      "passed": 19,
+      "png_dimensions": "(1920, 1061)"
+    },
+    "layout/1920x1080": {
+      "checks": 31,
+      "failures": [],
+      "motion": "hover/camera intermediate samples use paused Tween.custom_step; final transitions resume normally; not a performance benchmark or human playtest",
+      "passed": 31,
+      "png_dimensions": "(1920, 1061)"
+    },
+    "refinement/1920x1080": {
+      "checks": 17,
+      "failures": [],
+      "passed": 17,
+      "png_dimensions": "(1920, 1061)",
+      "window": "(1920, 1061)"
+    },
+    "art/1920x1080": {
+      "checks": 10,
+      "failures": [],
+      "motion": "positions and GPU frames sampled; not a human playtest or FPS benchmark",
+      "passed": 10,
+      "resolution": "(1920, 1061)"
+    }
+  }
+}

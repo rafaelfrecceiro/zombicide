@@ -21,16 +21,18 @@ Implementação inicial da M0. Dados ainda não conferidos ficam identificados c
 
 Abrir `src/project.godot` no Godot 4.7.2 e executar a cena principal. Instruções e verificações efetivamente realizadas em [progress.md](progress.md). O script `Iniciar-Jogo.ps1` também localiza a engine no PATH.
 
-Nesta entrega: mesa 3D com pinos, ações/combate e dados pendentes, objetivos/fuga, inventário, save e conexão privada host+convidado. **72/72** verificações de regras/save, **27/27** de interface headless, **29/29** com GPU e teste entre dois processos aprovados. Steam, internet e partida humana completa ainda não validados.
+Nesta entrega: mesa 3D com pinos, ações/combate e dados pendentes, objetivos/fuga, inventário, save e conexão privada host+convidado. **72/72** verificações de regras/save, **27/27 de habilidades**, **27/27** de interface headless, **29/29** com GPU e teste entre dois processos aprovados. Steam, internet e partida humana completa ainda não validados.
 
 O primeiro contato humano apontou dificuldade de entender como jogar. A revisão [UX-001](specs/UX-001.md) acrescenta guia inicial, orientação por etapa, destaque da peça ativa e dos destinos legais, e separa inventário/conexão das ações. Reteste humano ainda pendente; testes automatizados não comprovam compreensão.
 
 A revisão [MAP-001](specs/MAP-001.md) corrige zonas, portas, distâncias e visão a partir do manual. Missões novas usam 12 zonas; saves antigos de 18 células são incompatíveis e seu carregamento preserva o arquivo e a partida atual.
 
-![Interface UX-002 no Godot](qa/artifacts/ux-002/combat-result-1920.png)
+![Menu atual no Godot](qa/artifacts/ux-003/menu-1280.png)
+
+**Menu e conteúdo atuais:** [UX-003](specs/UX-003.md) traz menu inicial, central com Missão/Amigos/Opções, botões e janelas da direção B. Clique **Iniciar missão** para o preset de [Amy e Elle](specs/CONTENT-001.md), com habilidades azuis/laranja/vermelha conferidas; os outros quatro continuam peões genéricos. Ações gratuitas e escolhas são automatizadas; pistola corrigida para 3+. Os decks ainda são de laboratório. Saves v1/v2 incompatíveis são preservados, sem migração automática. **19/19 checks de menu** por tamanho; não representa aprovação humana do acabamento.
 
 **Direção escolhida: B — Quadrinhos Urbanos (D-016).** [Primeira amostra na engine](arte/producao/b-001/README.md): tabuleiro ilustrado, seis retratos, nove modelos estáticos Blender/GLB, UI de cartões claros e movimento da peça inteira. Acabamento de miniaturas e paridade de conteúdo ainda pendentes. [Alternativas preservadas](arte/direcoes/README.md) · [Bíblia visual](direcao-arte.md). A imagem conceitual não é uma promessa de qualidade já alcançada no runtime.
 
 [Refinamento B-002](arte/producao/b-002/README.md): quatro modelos substituídos (Sobrevivente 01 e três zumbis), galeria giratória **Miniaturas**, fonte condensada licenciada, prévia de ataque validada pelo motor, faces visuais dos dados e **Inspecionar zona** para todos os atores. Teste dedicado **17/17** e arte **10/10** em 1280×800 e 1920×1061 reais. Os outros cinco sobreviventes ainda usam B-001; aprovação humana do acabamento segue pendente.
 
-[Interface vigente UX-002](specs/UX-002.md): mesa sem ajuda modal obrigatória, objetivos separados, ficha compacta, ícones, cartões/ações persistentes, histórico recolhido e bandeja compacta após o lançamento. Hover, pressão, guia e câmera têm transições com redução de movimento. Atalhos 1–6/M/A/B/I/Espaço/Esc; listas extensas têm rolagem própria. **31/31 verificações adicionais de layout/interação** por tamanho; conforto, beleza e compreensão ainda aguardam avaliação humana. Para executar o projeto no editor, use **F5**.
+[Base da interface UX-002](specs/UX-002.md): mesa sem ajuda modal obrigatória, objetivos separados, ficha compacta, ícones, cartões/ações persistentes, histórico recolhido e bandeja compacta após o lançamento. Hover, pressão, guia e câmera têm transições com redução de movimento. Atalhos 1–6/M/A/B/I/Espaço/Esc; listas extensas têm rolagem própria. **31/31 verificações adicionais de layout/interação** por tamanho; conforto, beleza e compreensão ainda aguardam avaliação humana. Para executar o projeto no editor, use **F5**.

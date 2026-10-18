@@ -7,6 +7,7 @@ const Storage = preload("res://core/storage.gd")
 var rules = Rules.new()
 var view: Dictionary = {}
 var role = "host"
+var chosen_profiles: Array = []
 var mode = "offline"
 var invitation = ""
 var reconnect_secret = ""
@@ -43,7 +44,7 @@ func host(code: String, number: int = 27170) -> Error:
 	invitation = code
 	guest_secret = ""
 	peers.clear()
-	rules.start(0,true)
+	rules.start(0,true,chosen_profiles)
 	rules.pause("Aguardando o amigo convidado.")
 	refresh()
 	return OK

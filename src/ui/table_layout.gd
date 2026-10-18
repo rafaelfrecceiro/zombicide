@@ -40,7 +40,7 @@ static func build(t,ui: CanvasLayer) -> Theme:
 	header.add_child(t.info)
 	quiet(t,"Como jogar",func(): t.help_dialog.popup_centered(Vector2i(640,440)),header,"help")
 	quiet(t,"Miniaturas",func(): t.gallery.popup_centered_clamped(Vector2i(980,540),.92),header)
-	quiet(t,"Partida",func(): t.session_dialog.popup_centered(Vector2i(520,510)),header,"settings")
+	quiet(t,"Menu",func(): t.game_menu.show_menu(),header,"settings")
 	var mission = HBoxContainer.new()
 	mission.add_theme_constant_override("separation",8)
 	layout.add_child(mission)

@@ -23,6 +23,7 @@
 | D-016 | 17/10/2026 | Escolher B — Quadrinhos Urbanos | Usuário respondeu “a B” às três direções; miniaturas pintadas rígidas, tabuleiro ilustrado de contorno forte e interface de cartões claros. A/C preservadas como alternativas históricas; desenvolver amostra na engine antes de ampliar produção |
 | D-017 | 17/10/2026 | Executar o refinamento representativo da direção B | Usuário respondeu “pode seguir” à proposta de refinar um sobrevivente, Walker/Runner/Fatty e combate/dados antes de ampliar o elenco. Autoriza produção da amostra, sem aprovar automaticamente seu acabamento |
 | D-018 | 17/10/2026 | Priorizar layout e UI fluidos, intuitivos e bonitos | Pedido explícito do usuário; autoriza refinamento da B em UX-002, hierarquia, navegação e transições. Não aprova automaticamente o resultado nem muda regras/conteúdo |
+| D-019 | 17/10/2026 | Avançar a conferência de conteúdo da M0 e dar mais caráter de jogo aos menus/botões | Usuário autorizou a recomendação e pediu melhorar UI, menus e botões. CONTENT-001/UX-003 implementam o lote verificável; não é aceitação automática nem M0 integral |
 
 ## Propostas de origem e situação atual
 
@@ -48,6 +49,8 @@ Início de desenvolvimento autorizado em D-014, direção visual B escolhida em 
 - T-004: MAP-001 usa áreas de tamanhos diferentes, não uma ação por célula. Versão de conteúdo `m0-lab-v2-map12` rejeita saves antigos, preservando arquivo e estado atual. É uma correção reversível da implementação, não alteração aprovada das regras físicas.
 
 ## Feedback observado — 17/10/2026
+
+O usuário informou que **não tem acesso à caixa/cartas físicas**. Registrar a restrição de entrada: continuar pesquisa documental pública e manter os valores não conferidos pendentes, sem exigir novamente o material físico. Isso não altera a prioridade de fidelidade de D-004.
 
 O usuário disse: “essas artes e layout são totalmente prototipos, certo? pois está horrivel, mal conseguir jogar algo, pois não entendi nada”. Isso registra rejeição da apresentação inicial e dificuldade de compreensão. Não é aprovação de nova arte nem de mudanças nas regras.
 

@@ -36,6 +36,7 @@ func run() -> void:
 	if output.is_empty(): quit(1); return
 	DirAccess.make_dir_recursive_absolute(output)
 	table = load("res://main.tscn").instantiate()
+	table.skip_intro = true
 	root.add_child(table)
 	await create_timer(.35).timeout
 	check(not table.help_dialog.visible and table.empty_hint.visible and table.survivor_box.get_child_count() == 6,"first contact shows group and guidance without a blocking modal")
@@ -63,9 +64,13 @@ func run() -> void:
 	stable_move.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	await process_frame
 	stable_move.animate_hover(1)
-	await create_timer(.05).timeout
+	# Drive the real Tween deterministically: slow GPU readback can consume
+	# its whole wall-clock duration before the first timer resumes.
+	stable_move.hover_tween.pause()
+	stable_move.hover_tween.custom_step(.05)
 	check(stable_move.hover_amount > 0 and stable_move.hover_amount < 1,"hover feedback sampled between its start and end")
 	await frame("hover-feedback")
+	stable_move.hover_tween.play()
 	await create_timer(.14).timeout
 	# GPU readback can advance wall timers more than Tween's processed frames.
 	for i in range(30):
@@ -82,8 +87,10 @@ func run() -> void:
 	var old_camera = table.camera.position
 	table.angle += .25
 	table.position_camera()
-	await create_timer(.07).timeout
+	table.camera_tween.pause()
+	table.camera_tween.custom_step(.07)
 	check(table.camera.position.distance_to(old_camera) > .01 and table.camera.position.distance_to(table.camera_goal.position) > .01,"camera transition sampled between distinct poses")
+	table.camera_tween.play()
 	await create_timer(.23).timeout
 	for i in range(30):
 		if not table.camera_tween.is_running(): break
@@ -139,5 +146,5 @@ func run() -> void:
 		choices.get_child(13).pressed.emit()
 		check(r.s.pending.is_empty() and r.s.zombies.size() == before_count-1 and not r.s.zombies.any(func(z): return z.id == last_id),"last scrolled target applies exactly the selected legal choice")
 	var f = FileAccess.open(output+"/result.json",FileAccess.WRITE)
-	f.store_string(JSON.stringify({"checks":checks,"passed":checks-failures.size(),"failures":failures,"png_dimensions":str(image_size),"motion":"sampled transitions; not a performance benchmark or human playtest"},"  "))
+	f.store_string(JSON.stringify({"checks":checks,"passed":checks-failures.size(),"failures":failures,"png_dimensions":str(image_size),"motion":"hover/camera intermediate samples use paused Tween.custom_step; final transitions resume normally; not a performance benchmark or human playtest"},"  "))
 	quit(0 if failures.is_empty() else 1)

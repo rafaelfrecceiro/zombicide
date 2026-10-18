@@ -23,6 +23,7 @@ func run() -> void:
 	session.save_path = "user://qa-network.save"
 	session.name = "Session"
 	root.add_child(session)
+	if side == "host": session.chosen_profiles = ["amy","","","elle","",""]
 	session.rejected.connect(func(message):
 		if message.contains("controle") or message.contains("indisponível"): rejected_foreign = true)
 	var err = session.host("qa-private-invitation",28171) if side == "host" else session.join("127.0.0.1","qa-private-invitation",28171)
@@ -39,6 +40,11 @@ func _process(_delta: float) -> bool:
 		return false
 	var v = session.view
 	if v.is_empty(): return false
+	# A new client still has its local offline preview until its first snapshot.
+	if side == "client" and v.players.size() != 2: return false
+	if v.survivors[0].profile != "amy" or v.survivors[3].skills != ["sniper"]:
+		complete(false,"Verified profiles lost in authoritative snapshot or reconnect")
+		return false
 	if side == "host":
 		if stage == 0 and not v.paused:
 			for id in [0,1,2]:

@@ -6,7 +6,7 @@ $zomProject = Split-Path -Parent $PSScriptRoot
 $zomSource = Join-Path $zomProject 'src'
 $zomRun = Join-Path $PSScriptRoot ('runs/' + [guid]::NewGuid().ToString('N').Substring(0,8))
 New-Item -ItemType Directory -Path $zomRun -Force | Out-Null
-foreach ($zomTest in @('rules','ui')) {
+foreach ($zomTest in @('rules','skills','ui')) {
     & $zomEngine --headless --path $zomSource --script "../qa/${zomTest}_test.gd" --log-file "$zomRun/$zomTest.log" -- "--report=$zomRun/$zomTest.json"
     if ($LASTEXITCODE -ne 0) { throw "Falha em $zomTest; veja $zomRun" }
 }

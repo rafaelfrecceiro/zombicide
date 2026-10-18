@@ -34,7 +34,9 @@ func _draw() -> void:
 			outline.append(points[0])
 			draw_polyline(outline,color,3,true)
 			var cost = 1
-			if s.active >= 0: cost += s.zombies.filter(func(z): return z.zone == s.survivors[int(s.active)].zone).size()
+			if s.active >= 0:
+				cost = table.rule_preview.action_cost(s.survivors[int(s.active)],"move")
+				cost += s.zombies.filter(func(z): return z.zone == s.survivors[int(s.active)].zone).size()
 			text_at("MOVER · %d AÇÃO" % cost if table.mode == "move" else ("PORTA" if table.mode == "open" else "ALCANCE"),center+Vector2(0,-8),15,color)
 		if id == table.hovered_zone:
 			var hover_outline = points.duplicate()

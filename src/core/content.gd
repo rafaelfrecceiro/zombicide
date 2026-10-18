@@ -2,7 +2,7 @@ extends RefCounted
 ## Map transcribed from ZCD001 p.36 using the zone definition on p.9.
 ## Equipment, survivor profiles and decks remain incomplete laboratory content.
 
-const VERSION = "m0-lab-v2-map12"
+const VERSION = "m0-lab-v3-skills"
 
 static func board() -> Dictionary:
 	var zones = {}
@@ -37,7 +37,7 @@ static func border(a: Dictionary,b: Dictionary) -> Dictionary:
 
 static func weapons() -> Dictionary:
 	return {
-		"pistol":{"name":"Pistola","mode":"ranged","range":[0,1],"dice":1,"accuracy":4,"damage":1,"noise":true,"dual":true},
+		"pistol":{"name":"Pistola","mode":"ranged","range":[0,1],"dice":1,"accuracy":3,"damage":1,"noise":true,"dual":true},
 		"axe":{"name":"Machado","mode":"melee","range":[0,0],"dice":1,"accuracy":4,"damage":2,"noise":false,"door":true,"door_noise":true},
 		"crowbar":{"name":"Pé de cabra","mode":"melee","range":[0,0],"dice":1,"accuracy":4,"damage":1,"noise":false,"door":true,"door_noise":false},
 		"bat":{"name":"Taco — teste","mode":"melee","range":[0,0],"dice":2,"accuracy":3,"damage":1,"noise":false},

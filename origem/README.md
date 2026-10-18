@@ -21,11 +21,11 @@ Baralho e elenco de laboratório devem ter identificação explícita. Não inve
 | Equipamento de busca | Dez cartas de laboratório; pistola/machado/pé de cabra/escopeta/Molotov/provisões/Aaahh!! | Não reproduz quantidades/probabilidades da caixa; provisões sem efeito de consumo implementado |
 | Arma especial | Duas instâncias de fixture `special` | Não é inventário das 11 cartas Pimpweapon oficiais |
 | Spawn | Quatro entradas alternando dois exemplos Walker | Valores das linhas ilustradas pp.15/25; não é deck oficial, sem Rush/extra card real |
-| Sobreviventes | Seis adultos anônimos sem habilidades individuais; amarelo +1 ação | Sem equivalência alegada às fichas; pausa no laranja evita árvore inventada |
+| Sobreviventes | Preset Amy e Elle, com árvores conferidas; quatro peões adultos genéricos. Opção de seis genéricos | Amy p.7, Elle p.15, efeitos pp.63/65; genéricos continuam pausando no laranja. Retratos/modelos não são a aparência oficial |
 | Mapa | 12 zonas: sete salas e cinco ruas; três portas externas; duas salas escuras por edifício | pp.9–10/36, MAP-001; substitui 18 células, preserva ruas sobre a emenda e sala alongada; arte ainda esquemática |
 | Arte | Direção B escolhida: PNGs image_gen, ícones próprios, nove miniaturas estáticas Blender/GLB e UI de cartões | [Procedência B-001](../arte/producao/b-001/README.md); nenhuma imagem/modelo oficial ou de terceiros no runtime; modelos são estudos, não fichas oficiais |
 
-Essas lacunas impedem chamar a entrega de M0 integral fiel. O objetivo aprovado continua sendo preencher e validar o conteúdo oficial, sem redefinir silenciosamente o design como jogo diferente.
+Essas lacunas impedem chamar a entrega de M0 integral fiel. O objetivo aprovado continua sendo preencher e validar o conteúdo oficial, sem redefinir silenciosamente o design como jogo diferente. [CONTENT-001](../specs/CONTENT-001.md) registra a cobertura mecânica atual e a pistola corrigida para 3+ conforme p.13. [Inventário documental](inventario-caixa.md) transcreve as quantidades da p.4, sem alegar todos os atributos ou baralhos implementados. O usuário não tem acesso ao material físico; pesquisa pública continua necessária para os dados restantes.
 
 ## Fontes técnicas
 
@@ -35,4 +35,4 @@ Essas lacunas impedem chamar a entrega de M0 integral fiel. O objetivo aprovado 
 
 Versões e resultados em progress.md. Arte própria produzida por código e image_gen; prompts, blueprint, scripts, fontes .blend e manifesto em arte/producao/b-001. Não houve engenharia reversa de aplicativo Zombicide ou incorporação de assets oficiais de referência.
 
-Refinamento [B-002](../arte/producao/b-002/README.md): quatro novas miniaturas próprias Blender substituem as equivalentes B-001; fontes `.blend`, relatório e hashes preservados. Fonte externa **Barlow Condensed Bold**, Copyright 2017 The Barlow Project Authors, distribuída sob **SIL OFL 1.1**, com licença em `src/assets/b/fonts/OFL.txt` e URL/arquivo/hash no manifesto B-002. A declaração de ausência de imagens/modelos externos não inclui essa fonte tipográfica licenciada. Conteúdo de regras e versão de save permanecem parciais e inalterados.
+Refinamento [B-002](../arte/producao/b-002/README.md): quatro novas miniaturas próprias Blender substituem as equivalentes B-001; fontes `.blend`, relatório e hashes preservados. Fonte externa **Barlow Condensed Bold**, Copyright 2017 The Barlow Project Authors, distribuída sob **SIL OFL 1.1**, com licença em `src/assets/b/fonts/OFL.txt` e URL/arquivo/hash no manifesto B-002. A declaração de ausência de imagens/modelos externos não inclui essa fonte tipográfica licenciada. B-002 não alterou regras/save; a rodada posterior CONTENT-001 passa a `m0-lab-v3-skills`.

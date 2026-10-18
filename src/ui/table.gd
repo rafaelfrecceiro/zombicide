@@ -4,6 +4,7 @@ const Session = preload("res://net/session.gd")
 const Content = preload("res://core/content.gd")
 const Art = preload("res://ui/comic_art.gd")
 const Kit = preload("res://ui/ui_kit.gd")
+const Profiles = preload("res://core/survivors.gd")
 var session
 var board = Content.board()
 var defs = Content.weapons()
@@ -86,6 +87,12 @@ var camera_tween: Tween
 var camera_ready = false
 var camera_goal: Dictionary = {}
 var piece_signature = ""
+var game_menu: CanvasLayer
+var session_tabs: TabContainer
+var session_feedback: Label
+var new_dialog: ConfirmationDialog
+var new_profiles: Array = []
+var rule_preview
 
 func _ready() -> void:
 	build_ui()
@@ -94,15 +101,20 @@ func _ready() -> void:
 	session.name = "Session"
 	add_child(session)
 	session.changed.connect(func(): message.text = ""; refresh())
-	session.rejected.connect(func(text): message.text = text)
+	session.rejected.connect(func(text):
+		message.text = text
+		session_feedback.text = text)
 	refresh()
+	game_menu = preload("res://ui/game_menu.gd").new()
+	game_menu.table = self
+	add_child(game_menu)
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--capture="): capture_path = arg.trim_prefix("--capture=")
 	if not skip_intro:
 		if not capture_path.is_empty():
 			if "--capture-intro" in OS.get_cmdline_user_args(): help_dialog.popup_centered(Vector2i(640,440))
 			capture.call_deferred()
-		else: roster_buttons[0].call_deferred("grab_focus")
+		else: game_menu.show_menu.call_deferred()
 
 func label(text: String,size: int = 16) -> Label:
 	var l = Label.new()
@@ -169,43 +181,81 @@ func build_ui() -> void:
 	inventory_box = VBoxContainer.new()
 	inventory_dialog.add_child(inventory_box)
 	session_dialog = AcceptDialog.new()
-	session_dialog.title = "Partida, save e amigos"
-	session_dialog.ok_button_text = "Voltar para a mesa"
+	session_dialog.title = "CENTRAL DA MISSÃO"
+	session_dialog.ok_button_text = "Voltar"
 	ui.add_child(session_dialog)
+	new_dialog = ConfirmationDialog.new()
+	new_dialog.title = "INICIAR OUTRA MISSÃO"
+	new_dialog.dialog_text = "Substituir a mesa atual? O progresso que não foi salvo será perdido."
+	new_dialog.ok_button_text = "Iniciar missão"
+	new_dialog.cancel_button_text = "Voltar"
+	new_dialog.confirmed.connect(begin_new_mission)
+	ui.add_child(new_dialog)
+	session_tabs = TabContainer.new()
+	session_tabs.custom_minimum_size = Vector2(580,300)
+	session_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var session_body = VBoxContainer.new()
+	session_dialog.add_child(session_body)
+	session_body.add_child(session_tabs)
+	session_feedback = label("",14)
+	session_feedback.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	session_body.add_child(session_feedback)
 	var settings = VBoxContainer.new()
 	settings.add_theme_constant_override("separation",8)
-	session_dialog.add_child(settings)
-	button("Salvar missão",func(): session.save_game(),settings)
-	button("Continuar save",func(): session.load_game(); session_dialog.hide(),settings)
-	button("Fazer ruído (gasta 1 ação)",func(): session.submit({"action":"noise"}); session_dialog.hide(),settings)
-	var motion = CheckButton.new()
-	motion.text = "Reduzir movimento da interface e peças"
-	motion.toggled.connect(apply_reduce_motion)
-	settings.add_child(motion)
-	settings.add_child(label("Conexão privada de teste · 2 pessoas",17))
+	settings.name = "MISSÃO"
+	session_tabs.add_child(settings)
+	button("Salvar missão",func():
+		if session.save_game() == ERR_UNAUTHORIZED: session_feedback.text = "Só o anfitrião pode salvar a missão online.",settings)
+	button("Continuar save",load_session_mission,settings)
+	var friends = VBoxContainer.new()
+	friends.name = "AMIGOS"
+	friends.add_theme_constant_override("separation",12)
+	session_tabs.add_child(friends)
+	friends.add_child(label("Conexão privada de teste · 2 pessoas",17))
+	friends.add_child(label("ENDEREÇO DO ANFITRIÃO",13))
 	ip = LineEdit.new()
 	ip.text = "127.0.0.1"
 	ip.placeholder_text = "Endereço do anfitrião"
-	settings.add_child(ip)
+	friends.add_child(ip)
+	friends.add_child(label("CONVITE PRIVADO",13))
 	code = LineEdit.new()
 	code.text = "mesa-amigos"
 	code.placeholder_text = "Convite (mínimo 6 caracteres)"
 	code.secret = true
-	settings.add_child(code)
+	friends.add_child(code)
 	button("Criar mesa online",func():
 		var err = session.host(code.text)
 		message.text = "Sala criada. Convide seu amigo." if err == OK else "Não foi possível criar sala (%d)." % err
-		session_dialog.hide(),settings)
+		session_feedback.text = message.text
+		if err == OK: close_session_to_table(),friends)
 	button("Entrar / reconectar",func():
 		var err = session.join(ip.text,code.text)
 		message.text = "Conectando…" if err == OK else "Falha ao conectar (%d)." % err
-		session_dialog.hide(),settings)
-	button("Desconectar cliente",func(): session.disconnect_client(); session_dialog.hide(),settings)
+		session_feedback.text = message.text
+		if err == OK: close_session_to_table(),friends)
+	button("Desconectar cliente",func(): session.disconnect_client(); session_dialog.hide(),friends)
+	var options = VBoxContainer.new()
+	options.name = "OPÇÕES"
+	options.add_theme_constant_override("separation",14)
+	session_tabs.add_child(options)
+	var motion = CheckButton.new()
+	motion.text = "Reduzir movimento da interface e peças"
+	motion.toggled.connect(apply_reduce_motion)
+	options.add_child(motion)
+	options.add_child(label("Movimento reduzido afeta câmera, peças e feedback da interface.",14))
+	button("Tela cheia / janela",func(): DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN else DisplayServer.WINDOW_MODE_FULLSCREEN),options)
+	settings.add_child(label("Salvar conserva a vez, o equipamento e as decisões pendentes.",15))
+	settings.add_child(label("Laboratório M0 · duas fichas conferidas; decks ainda parciais.",14))
 	var paper_theme = theme.duplicate()
 	paper_theme.set_stylebox("panel","AcceptDialog",box_style(Art.PAPER))
 	paper_theme.set_color("font_color","Label",Art.INK)
 	paper_theme.set_color("default_color","RichTextLabel",Art.INK)
-	for dialog in [attack_dialog,help_dialog,inventory_dialog,session_dialog,zone_dialog,gallery,history_dialog]: dialog.theme = paper_theme
+	Kit.game_windows(paper_theme)
+	for dialog in [attack_dialog,help_dialog,inventory_dialog,session_dialog,zone_dialog,gallery,history_dialog,new_dialog]: dialog.theme = paper_theme
+	for dialog in [attack_dialog,help_dialog,inventory_dialog,session_dialog,zone_dialog,gallery,history_dialog,new_dialog]: dialog.exclusive = true
+	for dialog in [attack_dialog,help_dialog,inventory_dialog,session_dialog,zone_dialog,gallery,history_dialog,new_dialog]:
+		dialog.add_theme_font_override("title_font",Art.HEADER_FONT)
+		dialog.add_theme_font_size_override("title_font_size",26)
 
 func build_world() -> void:
 	world = Node3D.new()
@@ -412,7 +462,10 @@ func refresh() -> void:
 		actor_portrait.modulate = Color.WHITE
 		actor_title.text = active.name+" · ATIVO"
 		actor_stats.text = "VIDA   %d / 3\nADRENALINA   %d" % [3-active.wounds,active.ap]
-		action_meter.text = "● " .repeat(int(active.actions))+"  %d %s" % [active.actions,"AÇÃO" if active.actions == 1 else "AÇÕES"]
+		var free_count = 0
+		for value in active.free.values(): free_count += int(value)
+		action_meter.text = "%d AÇÕES" % active.actions+(" + %d GRÁTIS" % free_count if free_count > 0 else "")
+		action_meter.tooltip_text = "\n".join(active.skills.map(func(id): return Profiles.skill_name(id)))
 		if not defs.get(active.inventory[weapon_slot],{}).has("range"):
 			for i in range(2):
 				if defs.get(active.inventory[i],{}).has("range"): weapon_slot = i; break
@@ -435,6 +488,7 @@ func refresh() -> void:
 	actions_box.visible = not pending and not active.is_empty()
 	var preview = preload("res://core/rules.gd").new()
 	preview.s = s
+	rule_preview = preview
 	legal_zones = []
 	if permitted and mode != "inspect": legal_zones = destinations(preview,active,mode)
 	for action in action_buttons:
@@ -444,7 +498,10 @@ func refresh() -> void:
 		if action == "objective": b.visible = not active.is_empty() and active.zone in s.objectives
 		if action == "crate": b.visible = not active.is_empty() and active.zone in s.crates
 		if action == "escape": b.visible = not active.is_empty() and active.zone == board.exit and s.objectives.is_empty() and s.crates.is_empty()
-		b.disabled = not reason.is_empty() or (action != "end" and not active.is_empty() and active.actions <= 0)
+		b.disabled = not reason.is_empty() or (action in ["objective","crate","escape"] and not active.is_empty() and active.actions <= 0)
+		var payment_type = defs.get(active.inventory[weapon_slot],{}).get("mode","ranged") if action == "attack" and not active.is_empty() else "move" if action == "move" else "generic"
+		b.text = {"move":"Mover","attack":"Atacar","open":"Abrir porta","search":"Buscar","objective":"Coletar objetivo","crate":"Pegar arma especial","escape":"Fugir pela saída","end":"Encerrar"}[action]
+		if not active.is_empty() and action in ["move","attack"] and preview.action_cost(active,payment_type) == 0: b.text += " · grátis"
 		b.tooltip_text = reason if not reason.is_empty() else {"move":"M · Escolha uma zona verde. Custo: 1 ação + zumbis na origem.","attack":"A · Escolha uma zona em alcance. Confira a prévia antes de gastar a ação.","open":"Selecione uma porta destacada; requer ferramenta equipada.","search":"B · Busque equipamento nesta sala. Uma busca por ativação.","end":"Conclui esta ativação e libera o próximo sobrevivente.","objective":"Custa 1 ação; recebe 5 de adrenalina.","crate":"Custa 1 ação; recolhe uma arma especial.","escape":"Saia ao fim da ativação, com a zona livre."}[action]
 		Kit.role(b,"primary" if mode == action else "paper")
 	render_inventory(active,permitted)
@@ -487,7 +544,9 @@ func refresh() -> void:
 				elif p.kind in ["building","split"]: text = zone_name(choice)
 				elif p.kind == "hit": text = "Zumbi #"+choice
 				elif p.kind == "trade": text = "Aceitar" if choice == "yes" else "Recusar"
-				button(text,func(): session.submit({"action":"choose","choice":choice}),choices_parent,p.owner != session.role or s.paused)
+				elif p.kind == "skill": text = Profiles.skill_label(choice)
+				var choice_button = button(text,func(): session.submit({"action":"choose","choice":choice}),choices_parent,p.owner != session.role or s.paused)
+				if p.kind == "skill": choice_button.tooltip_text = Profiles.skill_name(choice)
 	update_guide(s,active)
 	update_guide_motion()
 	update_zone_context()
@@ -530,10 +589,10 @@ func zone_name(id: String) -> String:
 	return board.zones[id].name
 
 func destinations(preview,active: Dictionary,action: String) -> Array:
-	if active.is_empty() or active.actions <= 0: return []
+	if active.is_empty(): return []
 	var result = []
 	if action == "move":
-		if active.actions >= 1+preview.zombies_at(active.zone).size(): result = preview.neighbors(active.zone)
+		if preview.can_pay(active,"move",preview.zombies_at(active.zone).size()): result = preview.neighbors(active.zone)
 	elif action == "open":
 		var tool = false
 		for i in range(2): tool = tool or defs.get(active.inventory[i],{}).get("door",false)
@@ -542,7 +601,7 @@ func destinations(preview,active: Dictionary,action: String) -> Array:
 				if active.zone in pair and not preview.s.doors.get(door_key(pair[0],pair[1]),false): result.append(pair[1] if pair[0] == active.zone else pair[0])
 	elif action == "attack":
 		var weapon = defs.get(active.inventory[weapon_slot],{})
-		if weapon.has("range"):
+		if weapon.has("range") and preview.can_pay(active,weapon.mode):
 			for zone in board.zones:
 				var d = preview.distance(active.zone,zone)
 				if d >= weapon.range[0] and d <= weapon.range[1] and preview.visible(active.zone,zone): result.append(zone)
@@ -551,7 +610,8 @@ func destinations(preview,active: Dictionary,action: String) -> Array:
 func action_reason(preview,active: Dictionary,action: String,permitted: bool) -> String:
 	if active.is_empty(): return "Primeiro clique em um sobrevivente abaixo do tabuleiro."
 	if not permitted: return "Aguarde a decisão pendente ou a sua vez."
-	if active.actions <= 0: return "Sem ações restantes. Clique em Encerrar."
+	var payment_type = defs.get(active.inventory[weapon_slot],{}).get("mode", "ranged") if action == "attack" else "move" if action == "move" else "search" if action == "search" else "generic"
+	if not preview.can_pay(active,payment_type): return "Sem ações para esta ação. Use uma ação gratuita disponível ou encerre."
 	if action in ["move","attack","open"] and destinations(preview,active,action).is_empty():
 		return {"move":"Não há ações suficientes para sair desta zona com zumbis.","attack":"Equipe uma arma em uma das mãos para atacar.","open":"É preciso uma porta fechada adjacente e ferramenta equipada."}[action]
 	if action == "search":
@@ -580,7 +640,7 @@ func update_guide(s: Dictionary,active: Dictionary) -> void:
 	elif active.is_empty():
 		guide_title.text = "1. Escolha um sobrevivente"
 		guide_body.text = "Clique em um dos seis cartões abaixo do tabuleiro para começar sua ativação."
-	elif active.actions <= 0:
+	elif active.actions <= 0 and active.free.values().all(func(value): return value <= 0):
 		guide_title.text = "Encerre a ativação desta peça"
 		guide_body.text = "Não há ações restantes. Clique em Encerrar à direita e escolha outra peça disponível."
 	elif mode == "move":
@@ -635,8 +695,13 @@ func render_inventory(active: Dictionary,permitted: bool) -> void:
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo: return
-	for dialog in [help_dialog,inventory_dialog,session_dialog,attack_dialog,gallery,zone_dialog,history_dialog]:
+	for dialog in [help_dialog,inventory_dialog,session_dialog,attack_dialog,gallery,zone_dialog,history_dialog,new_dialog]:
 		if dialog.visible: return
+	if game_menu != null and game_menu.open:
+		if event.keycode == KEY_ESCAPE: game_menu.hide_menu()
+		get_viewport().set_input_as_handled()
+		return
+	if event.keycode == KEY_ESCAPE and mode == "inspect": game_menu.show_menu(); get_viewport().set_input_as_handled(); return
 	if get_viewport().gui_get_focus_owner() is LineEdit: return
 	if event.keycode == KEY_ESCAPE and mode != "inspect": cancel_selection()
 	elif event.keycode >= KEY_1 and event.keycode <= KEY_6:
@@ -763,7 +828,7 @@ func confirm_attack(zone: String) -> void:
 		return
 	var allies = s.survivors.filter(func(other): return not other.escaped and other.zone == zone and other.id != v.id)
 	var targets = s.zombies.filter(func(z): return z.zone == zone)
-	var lines = ["ALVO · "+zone_name(zone),"%d zumbi(s) · %d outro(s) sobrevivente(s)" % [targets.size(),allies.size()],"",str(attack_details.name).to_upper(),"Custo: 1 ação · Distância: %d zona(s)" % attack_details.distance,"%d dado(s) · Precisão %d+ · Dano por acerto %d" % [attack_details.dice,attack_details.accuracy,attack_details.damage],"Gera ruído" if attack_details.noise else "Ataque silencioso"]
+	var lines = ["ALVO · "+zone_name(zone),"%d zumbi(s) · %d outro(s) sobrevivente(s)" % [targets.size(),allies.size()],"",str(attack_details.name).to_upper(),"Custo: %d ação · Distância: %d zona(s)" % [attack_details.cost,attack_details.distance],"%d dado(s) · Precisão %d+ · Dano por acerto %d" % [attack_details.dice,attack_details.accuracy,attack_details.damage],"Gera ruído" if attack_details.noise else "Ataque silencioso"]
 	var resistant = targets.filter(func(z): return Content.threshold(z.type) > attack_details.damage).size()
 	if resistant > 0: lines.append("%d alvo(s) exigem dano maior que %d por acerto." % [resistant,attack_details.damage])
 	if not allies.is_empty() and weapon.get("mode","") == "ranged": lines.append("ATENÇÃO: há colegas na zona; erros podem causar fogo amigo.")
@@ -879,3 +944,30 @@ func apply_reduce_motion(enabled: bool) -> void:
 	for b in roster_buttons.values()+action_buttons.values(): b.reset_motion()
 	dice_tray.reduce_motion = true
 	dice_tray.queue_redraw()
+
+func close_session_to_table() -> void:
+	session_dialog.hide()
+	game_menu.hide_menu()
+
+func load_session_mission() -> void:
+	if session.mode == "client":
+		session_feedback.text = "Só o anfitrião pode restaurar a missão online."
+		return
+	if session.load_game(): close_session_to_table()
+
+func request_new_mission(with_profiles: bool) -> void:
+	if session.mode != "offline": return
+	new_profiles = ["amy","","","elle","",""] if with_profiles else []
+	if session.view.revision > 0: new_dialog.popup_centered()
+	else: begin_new_mission()
+
+func begin_new_mission() -> void:
+	if session.mode != "offline": return
+	session.chosen_profiles = new_profiles.duplicate()
+	session.rules.start(0,false,new_profiles)
+	mode = "inspect"
+	last_actor = -1
+	piece_signature = ""
+	piece_positions.clear()
+	session.refresh()
+	game_menu.hide_menu()

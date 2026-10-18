@@ -1,13 +1,14 @@
 extends RefCounted
 
 const Content = preload("res://core/content.gd")
+const Survivors = preload("res://core/survivors.gd")
 var s: Dictionary = {}
 var rng = RandomNumberGenerator.new()
 var map = Content.board()
 var defs = Content.weapons()
 var queue: Array = []
 
-func start(seed_value: int = 0, online: bool = false) -> void:
+func start(seed_value: int = 0, online: bool = false, profiles: Array = []) -> void:
 	if seed_value == 0: rng.randomize()
 	else: rng.seed = seed_value
 	s = {"schema":1,"content":Content.VERSION,"revision":0,"round":1,"phase":"players","paused":false,"pause_reason":"","outcome":"","active_player":0,"first_player":0,"active":-1,"players":["host","guest"] if online else ["host"],"survivors":[],"zombies":[],"doors":{},"revealed":[],"noise":{},"objectives":map.objectives.duplicate(),"crates":map.crates.duplicate(),"pending":{},"done":[],"log":[],"dice":[],"next_z":0,"seen":{},"deck":[],"discard":[],"spawn_deck":[],"spawn_discard":[],"special_deck":["special","special"],"reserve":{"walker":40,"fatty":16,"runner":16,"abomination":1}}
@@ -16,13 +17,21 @@ func start(seed_value: int = 0, online: bool = false) -> void:
 	var starting = ["pistol","pistol","pistol","axe","crowbar","bat"]
 	shuffle_array(starting)
 	for i in range(6):
-		s.survivors.append({"id":i,"name":"Peão %02d" % (i+1),"owner":"guest" if online and i >= 3 else "host","zone":map.start,"wounds":0,"ap":0,"actions":3,"searched":false,"escaped":false,"inventory":[starting[i],"","","",""]})
+		s.survivors.append({"id":i,"name":"Peão %02d" % (i+1),"owner":"guest" if online and i >= 3 else "host","zone":map.start,"wounds":0,"ap":0,"actions":3,"searched":false,"escaped":false,"inventory":[starting[i],"","","",""],"profile":"","skills":[],"skill_levels":[],"free":{}})
+	for i in range(mini(6,profiles.size())):
+		var id = str(profiles[i])
+		if not Survivors.profiles().has(id): continue
+		var v = s.survivors[i]
+		v.profile = id
+		v.name = Survivors.profiles()[id].name
+		v.skills = [Survivors.profiles()[id].blue]
+		reset_free(v)
 	s.deck = ["pistol","axe","crowbar","shotgun","shotgun","molotov","molotov","food","food","alarm"]
 	shuffle_array(s.deck)
 	s.spawn_deck = [0,1,0,1]
 	shuffle_array(s.spawn_deck)
 	for row in map.initial: add_zombie(row[0],row[1])
-	note("M0 em construção: peões sem skills e decks de laboratório. Paridade oficial pendente.")
+	note("M0 em construção: fichas parciais e decks de laboratório. Paridade oficial pendente.")
 
 func shuffle_array(a: Array) -> void:
 	for i in range(a.size()-1,0,-1):
@@ -128,6 +137,7 @@ func apply(cmd: Dictionary, participant: String = "host") -> Dictionary:
 	if not request.is_empty():
 		s.seen[token] = true
 		if s.seen.size() > 1024: s.seen.erase(s.seen.keys()[0])
+	drain()
 	s.revision += 1
 	return {"ok":true}
 
@@ -175,13 +185,14 @@ func execute(cmd: Dictionary,pid: String) -> String:
 		return ""
 	if action == "move":
 		if not target in neighbors(v.zone): return "Não há passagem aberta para essa zona."
-		var cost = 1+zombies_at(v.zone).size()
-		if v.actions < cost: return "Ações insuficientes: sair exige %d." % cost
-		v.actions -= cost
+		var extra = zombies_at(v.zone).size()
+		var cost = action_cost(v,"move")+extra
+		if not can_pay(v,"move",extra): return "Ações insuficientes: sair exige %d." % cost
+		pay(v,"move",extra)
 		v.zone = target
 		note(v.name+" moveu para "+map.zones[target].name+" (%d ação/ações)." % cost)
 		return ""
-	if v.actions <= 0: return "Sem ações restantes. Encerre a ativação."
+	if v.actions <= 0 and action not in ["attack","search"]: return "Sem ações restantes. Encerre a ativação."
 	match action:
 		"open":
 			var door_key = key(v.zone,target)
@@ -203,9 +214,10 @@ func execute(cmd: Dictionary,pid: String) -> String:
 				set_pending({"kind":"building","owner":pid,"rooms":rooms,"prompt":"Escolha a próxima sala escura a revelar."})
 			note("Porta aberta. O edifício será revelado uma única vez.")
 		"search":
+			if not can_pay(v,"search"): return "Sem ações para buscar."
 			if not map.zones[v.zone].inside or not zombies_at(v.zone).is_empty(): return "Busque em uma sala sem zumbis."
 			if v.searched: return "Esta peça já buscou nesta ativação."
-			v.actions -= 1
+			pay(v,"search")
 			v.searched = true
 			if s.deck.is_empty():
 				s.deck = s.discard.duplicate()
@@ -265,21 +277,22 @@ func set_pending(p: Dictionary) -> void:
 	s.pending = p
 
 func attack_info(cmd: Dictionary,v: Dictionary,target: String) -> Dictionary:
-	if v.get("actions",0) <= 0: return {"ok":false,"error":"Sem ações restantes."}
 	if not map.zones.has(target): return {"ok":false,"error":"Zona inválida."}
 	var slot = int(cmd.get("slot",0))
 	if slot < 0 or slot > 1: return {"ok":false,"error":"Use uma arma equipada em uma das mãos."}
 	var card = v.inventory[slot]
 	var weapon = defs.get(card,{})
 	if not weapon.has("range"): return {"ok":false,"error":"Este item não é uma arma equipada."}
+	if not can_pay(v,weapon.mode): return {"ok":false,"error":"Sem ações para este ataque."}
 	var d = distance(v.zone,target)
 	if d < weapon.range[0] or d > weapon.range[1] or not visible(v.zone,target): return {"ok":false,"error":"Alvo fora de alcance ou visão."}
 	if weapon.mode == "melee" and target != v.zone: return {"ok":false,"error":"Ataque corpo a corpo exige a mesma zona."}
-	var dice = int(weapon.dice)
+	var dice = int(weapon.dice)+int("die_combat" in v.skills)+int("die_"+weapon.mode in v.skills)
+	if card == "molotov": dice = 0
 	if card != "molotov" and cmd.get("dual",false):
 		if not weapon.get("dual",false) or v.inventory[1-slot] != card: return {"ok":false,"error":"Dual exige armas idênticas e compatíveis nas duas mãos."}
 		dice *= 2
-	return {"ok":true,"card":card,"name":weapon.name,"dice":dice,"accuracy":weapon.accuracy,"damage":weapon.damage,"distance":d,"cost":1,"noise":weapon.noise,"mode":weapon.mode}
+	return {"ok":true,"card":card,"name":weapon.name,"dice":dice,"accuracy":maxi(1,int(weapon.accuracy)-int("accuracy_combat" in v.skills)-int("accuracy_"+weapon.mode in v.skills)),"damage":weapon.damage,"distance":d,"cost":action_cost(v,weapon.mode),"sniper":"sniper" in v.skills,"noise":weapon.noise,"mode":weapon.mode}
 
 func begin_attack(cmd: Dictionary,v: Dictionary,target: String) -> String:
 	var info = attack_info(cmd,v,target)
@@ -287,7 +300,7 @@ func begin_attack(cmd: Dictionary,v: Dictionary,target: String) -> String:
 	var slot = int(cmd.get("slot",0))
 	var card = info.card
 	var weapon = defs[card]
-	v.actions -= 1
+	pay(v,weapon.mode)
 	if weapon.noise: add_noise(v.zone)
 	if card == "molotov":
 		v.inventory[slot] = ""
@@ -297,7 +310,7 @@ func begin_attack(cmd: Dictionary,v: Dictionary,target: String) -> String:
 		note("Molotov resolveu seu efeito na zona.")
 		return ""
 	var dice = info.dice
-	set_pending({"kind":"roll","owner":v.owner,"actor":v.id,"target":target,"weapon":card,"dice":dice,"prompt":"Lance %d dado(s). Precisão %d+, dano %d." % [dice,weapon.accuracy,weapon.damage]})
+	set_pending({"kind":"roll","owner":v.owner,"actor":v.id,"target":target,"weapon":card,"dice":dice,"accuracy":info.accuracy,"damage":info.damage,"sniper":info.sniper,"prompt":"Lance %d dado(s). Precisão %d+, dano %d." % [dice,info.accuracy,info.damage]})
 	return ""
 
 func roll() -> String:
@@ -308,13 +321,13 @@ func roll() -> String:
 	for i in range(p.dice):
 		var value = rng.randi_range(1,6)
 		values.append(value)
-		if value >= weapon.accuracy: hits += 1
+		if value >= p.get("accuracy",weapon.accuracy): hits += 1
 	s.dice = values
 	s.pending = {}
 	note("Dados: "+str(values)+" → %d acerto(s)." % hits)
 	var attacks = []
-	for i in range(hits): attacks.append({"kind":"hit","actor":p.actor,"target":p.target,"weapon":p.weapon})
-	if weapon.mode == "ranged":
+	for i in range(hits): attacks.append({"kind":"hit","actor":p.actor,"target":p.target,"weapon":p.weapon,"damage":p.get("damage",weapon.damage),"sniper":p.get("sniper",false)})
+	if weapon.mode == "ranged" and not p.get("sniper",false):
 		for i in range(p.dice-hits): attacks.append({"kind":"friendly","actor":p.actor,"target":p.target,"damage":weapon.damage})
 	queue = attacks+queue
 	drain()
@@ -327,6 +340,7 @@ func choices() -> Array:
 		"building": return p.rooms
 		"loot": return ["0","1","2","3","4","discard"]
 		"trade": return ["yes","no"]
+		"skill": return Survivors.profiles()[s.survivors[p.actor].profile]["orange" if p.level == 2 else "red"]
 		"hit": return p.targets.map(func(v): return str(v))
 		"wound": return p.targets.map(func(v): return str(v))
 		"split": return p.routes
@@ -337,6 +351,12 @@ func choose(choice: String) -> String:
 	var p = s.pending.duplicate(true)
 	s.pending = {}
 	match p.kind:
+		"skill":
+			var v = s.survivors[p.actor]
+			v.skills.append(choice)
+			v.skill_levels.append(p.level)
+			if choice.begins_with("free_"): v.free[choice.trim_prefix("free_")] = int(v.free.get(choice.trim_prefix("free_"),0))+1
+			note(v.name+" aprendeu: "+Survivors.skill_name(choice))
 		"building":
 			p.rooms.erase(choice)
 			spawn(choice)
@@ -386,7 +406,12 @@ func gain_ap(actor: int,amount: int) -> void:
 	if old == 0 and Content.danger(v.ap) > 0:
 		v.actions += 1
 		note(v.name+" chegou ao amarelo: +1 ação.")
-	if old < 2 and Content.danger(v.ap) >= 2:
+	if not v.profile.is_empty():
+		var unlocks = []
+		for level in [2,3]:
+			if old < level and Content.danger(v.ap) >= level: unlocks.append({"kind":"skill_unlock","actor":actor,"level":level})
+		queue = unlocks+queue
+	elif old < 2 and Content.danger(v.ap) >= 2:
 		s.content_block = true
 		s.paused = true
 		s.pause_reason = "Limite do laboratório: árvore de habilidades laranja/vermelha ainda não conferida. Salve a partida."
@@ -394,6 +419,7 @@ func gain_ap(actor: int,amount: int) -> void:
 func end_activation() -> void:
 	var v = s.survivors[s.active]
 	v.actions = 0
+	v.free.clear()
 	s.done.append(v.id)
 	s.active = -1
 	if s.survivors.all(func(x): return x.escaped): return
@@ -409,6 +435,7 @@ func end_activation() -> void:
 	note("Fase da horda.")
 	queue_activations(s.zombies.duplicate(true))
 	for zone in map.spawns: queue.append({"kind":"spawn","zone":zone})
+	queue.append({"kind":"medic_end"})
 	queue.append({"kind":"round_end"})
 	drain()
 
@@ -446,14 +473,18 @@ func drain() -> void:
 			return
 		var task = queue.pop_front()
 		match task.kind:
+			"skill_unlock":
+				var v = s.survivors[task.actor]
+				if task.level in v.skill_levels: continue
+				set_pending({"kind":"skill","owner":v.owner,"actor":v.id,"level":task.level,"prompt":v.name+": escolha a habilidade "+("laranja" if task.level == 2 else "vermelha")+"."})
 			"hit":
 				var weapon = defs[task.weapon]
 				var zs = zombies_at(task.target)
-				if weapon.mode == "ranged" and not zs.is_empty():
+				if weapon.mode == "ranged" and not task.get("sniper",false) and not zs.is_empty():
 					var best = 99
 					for z in zs: best = mini(best,priority(z.type))
 					zs = zs.filter(func(z): return priority(z.type) == best)
-				zs = zs.filter(func(z): return Content.threshold(z.type) <= weapon.damage)
+				zs = zs.filter(func(z): return Content.threshold(z.type) <= task.get("damage",weapon.damage))
 				if zs.is_empty(): continue
 				if zs.size() == 1: kill_zombie(zs[0].id,task.actor)
 				else: set_pending({"kind":"hit","owner":s.survivors[task.actor].owner,"actor":task.actor,"targets":zs.map(func(z): return z.id),"prompt":"Escolha qual zumbi recebe o acerto."})
@@ -488,6 +519,13 @@ func drain() -> void:
 				queue = extra+queue
 			"spawn": spawn(task.zone)
 			"building_continue", "split_continue": set_pending(task.pending)
+			"medic_end":
+				for medic in s.survivors:
+					if medic.escaped or not "medic" in medic.skills: continue
+					for v in survivors_at(medic.zone):
+						if v.wounds > 0:
+							v.wounds -= 1
+							gain_ap(medic.id,1)
 			"round_end":
 				s.round += 1
 				s.noise.clear()
@@ -503,6 +541,7 @@ func drain() -> void:
 				for v in s.survivors:
 					v.actions = 4 if v.ap >= 7 else 3
 					v.searched = false
+					reset_free(v)
 				note("Rodada %d. Ruído transitório removido." % s.round)
 
 func priority(kind: String) -> int:
@@ -595,7 +634,7 @@ func restore(payload: Dictionary) -> bool:
 	if not valid_structure(state,payload): return false
 	for v in state.survivors:
 		if not v is Dictionary: return false
-		for k in ["id","name","owner","zone","wounds","ap","actions","searched","escaped","inventory"]:
+		for k in ["id","name","owner","zone","wounds","ap","actions","searched","escaped","inventory","profile","skills","skill_levels","free"]:
 			if not v.has(k): return false
 		if not map.zones.has(v.zone) or not v.inventory is Array or v.inventory.size() != 5: return false
 		for item in v.inventory:
@@ -624,7 +663,7 @@ func valid_structure(state: Dictionary,payload: Dictionary) -> bool:
 	for k in ["pending","doors","noise","reserve","seen"]:
 		if not state[k] is Dictionary: return false
 	if not state.pending.is_empty():
-		if not state.pending.get("kind","") in ["roll","building","loot","trade","hit","wound","split"]: return false
+		if not state.pending.get("kind","") in ["roll","building","loot","trade","hit","wound","split","skill"]: return false
 		if not state.pending.get("owner","") in state.players or not state.pending.get("prompt",null) is String: return false
 	var ids = []
 	for v in state.survivors:
@@ -634,7 +673,30 @@ func valid_structure(state: Dictionary,payload: Dictionary) -> bool:
 		if v.id < 0 or v.id >= 6 or v.id in ids or v.wounds < 0 or v.ap < 0 or v.actions < 0: return false
 		if not v.get("owner","") in state.players: return false
 		if not v.get("escaped",null) is bool or not v.get("searched",null) is bool: return false
+		if not v.get("profile",null) is String or not v.get("skills",null) is Array or not v.get("skill_levels",null) is Array or not v.get("free",null) is Dictionary: return false
+		if not v.profile.is_empty() and not Survivors.profiles().has(v.profile): return false
+		var allowed = []
+		if not v.profile.is_empty():
+			var profile = Survivors.profiles()[v.profile]
+			allowed = [profile.blue]+profile.orange+profile.red
+			if v.skills.count(profile.blue) != 1 or v.skills.size() != v.skill_levels.size()+1: return false
+			for level in [2,3]:
+				if v.skill_levels.count(level) > 1: return false
+				var chosen = v.skills.filter(func(skill): return skill in profile["orange" if level == 2 else "red"])
+				if chosen.size() != (1 if level in v.skill_levels else 0): return false
+		elif not v.skills.is_empty() or not v.skill_levels.is_empty(): return false
+		for skill in v.skills:
+			if not skill in allowed: return false
+		for type in v.free:
+			if not type in ["move","melee","ranged","combat","search"] or not v.free[type] is int or v.free[type] < 0 or v.free[type] > v.skills.count("free_"+type): return false
+		for level in v.skill_levels:
+			if not level in [2,3] or Content.danger(v.ap) < level: return false
 		ids.append(v.id)
+	if state.pending.get("kind","") == "skill":
+		var p = state.pending
+		if not p.get("actor",null) is int or p.actor < 0 or p.actor >= 6 or not p.get("level",null) in [2,3]: return false
+		var v = state.survivors[p.actor]
+		if v.profile.is_empty() or p.owner != v.owner or p.level in v.skill_levels or Content.danger(v.ap) < p.level: return false
 	for z in state.zombies:
 		if not z is Dictionary or not z.get("id",null) is int or not z.get("type","") in ["walker","fatty","runner","abomination"]: return false
 	for kind in ["walker","fatty","runner","abomination"]:
@@ -647,7 +709,11 @@ func valid_structure(state: Dictionary,payload: Dictionary) -> bool:
 		if not card is int or card < 0 or card >= Content.spawn_samples().size(): return false
 	if not payload.get("queue",null) is Array: return false
 	for task in payload.queue:
-		if not task is Dictionary or not task.get("kind","") in ["hit","friendly","attack_group","move_group","zombie_wound","runner_second","spawn","building_continue","split_continue","round_end"]: return false
+		if not task is Dictionary or not task.get("kind","") in ["hit","friendly","attack_group","move_group","zombie_wound","runner_second","spawn","building_continue","split_continue","round_end","skill_unlock","medic_end"]: return false
+		if task.kind == "skill_unlock":
+			if not task.get("actor",null) is int or task.actor < 0 or task.actor >= 6 or not task.get("level",null) in [2,3]: return false
+			var v = state.survivors[task.actor]
+			if v.profile.is_empty() or Content.danger(v.ap) < task.level: return false
 	return true
 
 func normalize_numbers(value: Variant) -> Variant:
@@ -662,3 +728,24 @@ func normalize_numbers(value: Variant) -> Variant:
 		for k in value: out[k] = normalize_numbers(value[k])
 		return out
 	return value
+
+func reset_free(v: Dictionary) -> void:
+	v.free = {}
+	for skill in v.skills:
+		if skill.begins_with("free_"):
+			var type = skill.trim_prefix("free_")
+			v.free[type] = int(v.free.get(type,0))+1
+
+func action_cost(v: Dictionary,type: String) -> int:
+	if int(v.get("free",{}).get(type,0)) > 0: return 0
+	if type in ["melee","ranged"] and int(v.get("free",{}).get("combat",0)) > 0: return 0
+	return 1
+
+func can_pay(v: Dictionary,type: String,extra: int = 0) -> bool:
+	return v.get("actions",0) >= action_cost(v,type)+extra
+
+func pay(v: Dictionary,type: String,extra: int = 0) -> void:
+	if int(v.free.get(type,0)) > 0: v.free[type] -= 1
+	elif type in ["melee","ranged"] and int(v.free.get("combat",0)) > 0: v.free.combat -= 1
+	else: v.actions -= 1
+	v.actions -= extra

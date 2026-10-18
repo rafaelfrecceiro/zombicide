@@ -1,6 +1,6 @@
 # SAVE-001 — Persistência e retomada
 
-Compatibilidade de conteúdo: a revisão MAP-001 usa `m0-lab-v2-map12`. Saves do laboratório anterior `m0-lab-v1` são recusados com explicação, mantendo o arquivo e o estado atual; não existe migração entre as duas topologias.
+Compatibilidade vigente: `m0-lab-v3-skills`, com perfil, habilidades escolhidas, níveis, reservas de ações gratuitas e desbloqueios na fila. Saves `m0-lab-v1` e `m0-lab-v2-map12` são recusados com explicação, mantendo o arquivo e o estado atual; não existe migração automática. V2 preservava o mapa de 12 zonas, mas não os novos campos de habilidades.
 
 Data: 17/10/2026. Requisitos: D-012/D-013.
 

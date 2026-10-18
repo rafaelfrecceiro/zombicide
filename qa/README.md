@@ -1,4 +1,16 @@
-# QA da primeira entrega técnica
+# QA — Zombicide online
+
+## Referência atual — CONTENT-001 / UX-003
+
+Runner `a56d0205`, `.\qa\run-tests.ps1 -Render`, exit 0: **72/72 regras, 27/27 habilidades, 27/27 UI headless, 29/29 UI GPU; host/client aprovados**. `skills_test.gd` passa a integrar o runner. Verifica ações gratuitas/restrições, surcharge de movimento, escolhas laranja/vermelha, bônus por arma Dual, precisão modificada, Sniper, Medic, Molotov sem dados e persistência/validação. Rede verifica os perfis Amy/Elle nos snapshots e após reentrada, além do fluxo anterior.
+
+Matriz `skills-ui-delivery-{1280x800,1920x1080}`: **31/31 layout, 17/17 refinamento, 10/10 arte** por tamanho. Menus finais `session-menu-delivery-{1280x800,1920x1080}`: **19/19** por tamanho. Dimensões reais: **1280×800 e 1920×1061**. Sem erros nos logs finais inspecionados. [Capturas e resultados](artifacts/ux-003/); [conteúdo](../specs/CONTENT-001.md) e [menus](../specs/UX-003.md).
+
+`menu_test.gd` usa GPU e o mesmo argumento `--output=<diretorio-absoluto>` dos testes de layout. Exercita menu inicial, bloqueio de atalhos, abas, feedback de save/carga, proteção de reset, preset Amy/Elle, custo grátis pela seleção da zona, escolhas e restrição online. Usa `user://qa-menu-mission.save`, sem tocar no save da missão do usuário. Tela cheia ainda sem teste funcional dedicado.
+
+Correção do amostrador: hover/câmera intermediários do layout usam Tween real pausado + `custom_step`, depois retomam normalmente para o estado final. [API consultada](https://docs.godotengine.org/en/4.7/classes/class_tween.html#class-tween-method-custom-step). GPU readback pode consumir o tempo de parede dos timers, sem corresponder ao avanço esperado de frames; isso gerava falsas falhas intermediárias. Não é medição de fluidez/FPS. No teste de rede, aguardar snapshot com dois jogadores evita confundir a prévia local inicial com os dados do host.
+
+As seções abaixo preservam as rodadas anteriores; esta seção e progress.md indicam a validação atual. Não somar casos repetidos como cenários únicos. Sem aprovação humana de apresentação/compreensão, partida integral, internet ou Steam.
 
 Ambiente: Godot 4.7.2.stable.official.ed1daf0bf, Windows, renderer Compatibility. Render real observado em Intel Iris Xe / OpenGL 3.3. Sem medição de FPS ou partida humana completa. O primeiro contato humano rejeitou a apresentação inicial por dificuldade de compreensão; a revisão UX-001 ainda aguarda reteste.
 

@@ -33,6 +33,8 @@ Candidato de engenharia: mouse seleciona zona e sobrevivente, painéis de açõe
 
 Implementação de interface vigente em [UX-002](specs/UX-002.md), D-018: controles persistentes, guia sem modal obrigatório, cabeçalho/contadores, painel contextual compacto, grupo de seis, dados e histórico. Atalhos e transições com redução de movimento; aceitação humana ainda aberta.
 
+[UX-003](specs/UX-003.md), D-019, acrescenta menu inicial de missão, central com abas, janelas/botões da direção B e feedback visível de save/load. [CONTENT-001](specs/CONTENT-001.md) incorpora as árvores verificadas de Amy e Elle, ações gratuitas e correção da pistola; preset com duas fichas e quatro peões, baralhos ainda de laboratório. Sem material físico disponível ao usuário; os dados restantes dependem de pesquisa documental.
+
 ## Arte e áudio
 
 [Arte](direcao-arte.md): B — Quadrinhos Urbanos escolhida em D-016. Amostra B-001 usa tabuleiro ilustrado plano, miniaturas pintadas rígidas, retratos e UI gráfica. Modelos iniciais ainda em refinamento; referência física preservada para pesquisa, sem imagens do manual no runtime. Áudio final ainda não definido.
